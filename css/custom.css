@@ -6,3 +6,57 @@ code{
     border: 1px dashed #cccccc;
     background: #efefef;
 }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+body {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+#top-bar {
+    height: 5vh;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+#bar-chart-area {
+    height: 25vh;
+    background: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#data-table-container {
+    height: 60vh;
+    overflow-y: auto;
+}
+#bottom-nav {
+    height: 10vh;
+    background: #fff;
+    box-shadow: 0 -4px 6px rgba(0,0,0,0.1);
+}
+.small-icon {
+    width: 30px;
+    height: 30px;
+}
+.title-text {
+    font-size: 0.9rem;
+    margin: 0 10px;
+}
+.fraction-text {
+    font-size: 0.8rem;
+    margin: 0 10px;
+    color: #555;
+}
+.dropdown-toggle::after {
+    margin-left: 5px;
+}
+
+x-bar-graph {
+    width: 100%;
+    height: 100%;
+}

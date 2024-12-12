@@ -7,10 +7,25 @@ stateTagApp['state'] = {
         fr: "Ce texte est à l'intérieur de l'état.",
     },
 
-    rolex: null
+    rolex: null,
+
+    project: {
+        pie: [
+            {value: 25},
+            {value: 25},
+            {value: 25},
+            {value: 25},
+        ],
+        name: 'Projecto',
+        ratio: {
+            budget: 1000000,
+            spend: 300000,
+            percent: 30
+        }
+    }
 };
 
-function initGlobalStateWatchers(stateObserver){
+function initGlobalStateWatchers(stateObserver) {
 
     stateObserver.watch(
         function (state) {

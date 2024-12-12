@@ -14,7 +14,7 @@ const stateTagApp = {
         .concat('/#/'),
 
     api: {
-        production: "https://data.StateTagApps.com",
+        production: "https://api.CostGuard.io",
         development: "https://data.StateTagApps.com"
     },
 
