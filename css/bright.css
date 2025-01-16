@@ -1,0 +1,12 @@
+:root {
+    --bs-primary: #4C8FFF; /* Bright Blue (previously secondary) */
+    --bs-secondary: #646464; /* Medium Gray (previously dark) */
+    --bs-success: #40C987; /* Bright Green */
+    --bs-danger: #FF4C61; /* Bright Red (previously primary) */
+    --bs-warning: #FFD547; /* Bright Yellow */
+    --bs-info: #8A67FF; /* Vibrant Purple */
+    --bs-light: #FCFCFC; /* Light Gray */
+    --bs-dark: #FF8A33; /* Vibrant Orange (previously danger) */
+    --bs-white: #FFFFFF; /* White */
+    --bs-black: #000000; /* Black */
+}

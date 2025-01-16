@@ -22,22 +22,35 @@ body {
     height: 5vh;
     background-color: #fff;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+    font-size:1.3rem;
+    font-weight:bold;
 }
 #bar-chart-area {
-    height: 25vh;
+    /*height: 25vh;*/
+    aspect-ratio: 2.25 / 1; /* Width is 2.25x height */
+    width: 100%; /* Or any desired width */
     background: #eee;
     display: flex;
     justify-content: center;
     align-items: center;
 }
-#data-table-container {
-    height: 60vh;
-    overflow-y: auto;
+:root {
+    --bottom-nav-height: 10vh; /* Default */
 }
+
+#main-container {
+    height: calc(100% - var(--bottom-nav-height));
+    overflow-y: auto;
+    padding-bottom: calc(3em + var(--bottom-nav-height));
+}
+
 #bottom-nav {
-    height: 10vh;
+    height: var(--bottom-nav-height);
+    max-height: 5.5em;
     background: #fff;
     box-shadow: 0 -4px 6px rgba(0,0,0,0.1);
+    opacity: 0.9;
 }
 .small-icon {
     width: 30px;
@@ -56,7 +69,417 @@ body {
     margin-left: 5px;
 }
 
-x-bar-graph {
+x-bar-chart {
     width: 100%;
     height: 100%;
 }
+
+.dropdown-menu{
+    z-index: 9999 !important;
+    min-width: 350px !important;
+}
+
+.dropup .delete-button{
+    position: relative;
+    left: 1.5em;
+    top: -0.3em;
+}
+
+/*MEDIA*/
+/* common-media.css */
+
+/* Container Styles */
+.camera-container,
+.audio-recorder-container {
+    z-index: 999999999 !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.camera-container.landscape,
+.audio-recorder-container.landscape {
+    flex-direction: row;
+}
+
+/* Media View Styles */
+.media-view,
+.audio-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Top Controls */
+.top-controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 30;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 20px;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+
+.control-item {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    color: #fff;
+    opacity: 0.8;
+    margin: 0 5px;
+}
+
+.control-item i {
+    margin-right: 5px;
+}
+
+.control-item:hover {
+    opacity: 1;
+}
+
+/* Controls */
+.controls {
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.camera-container:not(.landscape) .controls,
+.audio-recorder-container:not(.landscape) .controls {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    flex-direction: row;
+}
+
+.camera-container.landscape .controls,
+.audio-recorder-container.landscape .controls {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    flex-direction: column;
+    width: auto;
+    height: auto;
+}
+
+.capture-controls,
+.confirm-controls,
+.action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+.camera-container.landscape .confirm-controls,
+.audio-recorder-container.landscape .action-buttons {
+    flex-direction: column;
+}
+
+/* Icon Buttons */
+.icon-btn {
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    padding: 10px 15px;
+    margin: 0 10px;
+    font-size: 24px;
+    border-radius: 5px; /* Maintains square corners */
+    cursor: pointer;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s, transform 0.3s;
+}
+
+.camera-container.landscape .confirm-controls .icon-btn,
+.audio-recorder-container.landscape .action-buttons .icon-btn {
+    margin: 10px 0;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 1);
+}
+
+.confirm {
+    color: #28a745;
+}
+
+.stop,
+.retake {
+    color: #dc3545;
+}
+
+.capture {
+    color: #333;
+}
+
+.capture:hover {
+    background: rgba(255, 255, 255, 1);
+}
+
+
+/* Loading Overlay */
+.loading-overlay,
+.countdown-overlay,
+.recording-overlay,
+.preview-overlay,
+.error-message {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Spinner */
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 8px solid #fff;
+    border-top: 8px solid #333; /* Default spinner color */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Countdown Display */
+.countdown {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #007bff;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Recording Indicator */
+.recording-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #dc3545;
+}
+
+.recording-indicator i {
+    margin-bottom: 10px;
+    font-size: 2rem;
+    animation: spin 1s linear infinite;
+}
+
+/* Audio Preview */
+.audio-preview {
+    width: 80%;
+    max-width: 500px;
+    outline: none;
+    border-radius: 10px;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Error Message */
+.error-message {
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(220, 53, 69, 0.9);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 110;
+    font-weight: bold;
+}
+
+/* Ensure the dropdown menu has relative positioning */
+.manage-dropdown {
+    position: relative;
+    overflow: hidden; /* Hide overflow for smooth transitions */
+}
+
+/* Wrapper for each dropdown item */
+.dropdown-item-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    transition: padding-left 0.3s ease;
+}
+
+/* Style for the menu-item-controls */
+.menu-item-controls {
+    position: absolute;
+    top: 0; /* Align to the top */
+    left: -100%; /* Hidden to the left initially */
+    width: 100%; /* Occupy full width of the parent */
+    height: 100%; /* Occupy full height of the parent */
+    background-color: white; /* Match the dropdown-menu's background */
+    display: flex;
+    align-items: center;
+    padding: 0 10px; /* Add some padding */
+    transition: left 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    pointer-events: none; /* Disable interactions when hidden */
+    z-index: 2; /* Ensure it sits above the dropdown-item */
+}
+
+/* Show controls when in manage mode */
+.manage-dropdown.manage-mode .dropdown-item-wrapper {
+    padding-left: 60px; /* Push the main item to the right */
+}
+
+.manage-dropdown.manage-mode .menu-item-controls {
+    left: 0; /* Slide in to visible position */
+    opacity: 1;
+    pointer-events: auto; /* Enable interactions when visible */
+}
+
+/* Specifically hide only the dropdown-item links when in manage mode */
+.manage-dropdown.manage-mode .dropdown-item-wrapper .dropdown-item {
+    visibility: hidden; /* Completely remove the links from layout */
+    /* Alternatively, use visibility: hidden; if preferred */
+}
+
+.dropdown-menu ul{
+    max-height: 50vh;
+    overflow-y: scroll;
+    padding-top: 1em;
+}
+
+/* Style for the delete button */
+.delete-button {
+    margin: 0px 25px 0px 5px;
+}
+
+/* Clean up menu-controls */
+.menu-controls {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+/* Style for individual menu-control */
+/*.menu-control {*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    cursor: pointer;*/
+/*    color: #000; !* Adjust color as needed *!*/
+/*    user-select: none;*/
+/*    background: none;*/
+/*    border: none;*/
+/*    padding: 0;*/
+/*}*/
+
+/*!* Remove default button styles and add hover effects *!*/
+/*.menu-control:hover {*/
+/*    color: #007bff; !* Change color on hover *!*/
+/*}*/
+
+/* Transition for icons and text */
+.menu-control i {
+    transition: transform 0.3s ease;
+}
+
+.menu-control span {
+    transition: color 0.3s ease;
+}
+
+/* Optional: Rotate the cog icon when in manage mode */
+.manage-dropdown.manage-mode .manage-button i {
+    transform: rotate(90deg);
+}
+
+.btn-xs {
+    font-size: 0.75rem; /* Smaller font size */
+    padding: 0.2rem 0.4rem; /* Adjust padding */
+    border-radius: 0.2rem; /* Slightly smaller corners */
+}
+
+
+#bottom-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    gap: 0; /* Remove gaps between elements */
+    background-color: #f8f9fa; /* Background color of the navigation bar */
+}
+
+#bottom-nav > .btn {
+    flex-grow: 1; /* Make buttons fill available space equally */
+    height: 100%; /* Make buttons fill the height of the navigation bar */
+    border: none; /* Remove borders for a cleaner look */
+    /*padding: 0px;*/
+}
+
+#bottom-nav > .btn:active, #bottom-nav > .btn:hover {
+    background-color: #e0e0e0; /* Add a hover effect */
+}
+
+/*
+Explanation of Adjustments:
+
+1.5rem (Minimum Font Size):
+- Increased from 1rem to 1.5rem to make icons larger on smaller devices like the iPhone SE.
+- Ensures the icons are still legible and not overly small.
+
+2vw + 0.75vh (Dynamic Font Size):
+- Increased the dynamic scaling slightly (1.5vw + 0.5vh → 2vw + 0.75vh) to make the icons proportionally larger across intermediate screen sizes.
+
+4rem (Maximum Font Size):
+- Raised the maximum cap from 3rem to 4rem to allow for a larger size on big devices like the iPad Pro Max Jumbo.
+*/
+#top-bar x-calendar > div > .btn >  i,
+#top-bar x-user-nav > div > .btn >  i,
+#bottom-nav >.btn > i{
+    font-size: clamp(1.25rem, 2vw + 0.75vh, 4rem);
+}
+#top-bar x-calendar > div > span{
+    display: flex;
+    align-items: center;
+}
+
+

@@ -1,0 +1,12 @@
+:root {
+    --bs-primary: #4DA6FF;  /* A bright blue, often used as a primary color for its neutrality and appeal */
+    --bs-secondary: #9966FF;  /* A violet tone, works well as a secondary color to complement primary */
+    --bs-success: #33CC99;  /* A green, typically used to indicate success */
+    --bs-danger: #FF4D4D;  /* A vibrant red, traditionally associated with danger or errors */
+    --bs-warning: #FF8000;  /* A bold orange, great for warnings */
+    --bs-info: #FFD700;  /* A golden yellow, useful for informational elements */
+    --bs-light: #F7F7F7;  /* A very light gray, neutral for backgrounds */
+    --bs-dark: #505050;  /* A medium charcoal gray, good for contrast or text */
+    --bs-white: #FFFFFF;  /* Pure white, standard for light elements */
+    --bs-black: #000000;  /* Pure black, standard for dark elements */
+}

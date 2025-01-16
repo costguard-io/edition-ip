@@ -1,0 +1,12 @@
+:root {
+    --bs-primary: #3F88C5; /* Electric Blue - A striking, versatile choice for primary actions */
+    --bs-secondary: #FF477E; /* Neon Pink - Vibrant and playful for secondary roles */
+    --bs-success: #37D67A; /* Neon Green - Bright and refreshing for success */
+    --bs-danger: #FF6F3C; /* Vibrant Orange-Red - High-energy for danger alerts */
+    --bs-warning: #FFC914; /* Golden Yellow - Bright and attention-grabbing for warnings */
+    --bs-info: #8C52FF; /* Electric Purple - Cool and modern for informational messages */
+    --bs-light: #F8F9FA; /* Soft White - Clean and minimal for light contexts */
+    --bs-dark: #2E2E3A; /* Deep Charcoal - Dark and sophisticated for contrast */
+    --bs-white: #FFFFFF; /* Pure White - For clarity */
+    --bs-black: #1A1A1A; /* Almost Black - Sleek and smooth for depth */
+}

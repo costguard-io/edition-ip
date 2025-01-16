@@ -1,19 +1,62 @@
 stateTagApp["commands"] = {
-    setEventContext:function (context){
+    setEventContext: function (context) {
         stateTagApp.$write('sta.context', context);
         return stateTagApp.$read('sta.context');
     },
 
-    getEventContext:function (){
+    getEventContext: function () {
         return stateTagApp.$read('sta.context');
     },
 
-    clear:function(){
-        stateTagApp.$execute('resetState')
+    clear: function (key) {
+        if (_.isUndefined(key)) {
+            stateTagApp.$execute('resetState')
+        } else {
+            stateTagApp.$execute('resetState', key)
+        }
     },
 
-    reset:function(){
+    reset: function () {
         stateTagApp.$execute('resetApp')
+    },
+
+    showModal: function (header, body, options = {}) {
+        options = {...stateTagApp.$read('modal.options'), ...options};
+        stateTagApp.$write('modal.options', options);
+        stateTagApp.$write('modal.content.header', header);
+        //stateTagApp.$write('modal.content.footer', error);
+        stateTagApp.$write('modal.content.body', body);
+    },
+
+    hideModal: function () {
+        this.clear('modal');
+    },
+
+    showLogin: function () {
+        this.clear('user');
+        let header = 'login';
+        let body = '<x-login></x-login>';
+        this.showModal(header, body, {x:false});
+    },
+
+    showPasswordReset: function (){
+        this.clear('user');
+        let header = 'password-reset';
+        let body = '<x-password-reset></x-password-reset>';
+        this.showModal(header, body);
+    },
+
+    showPasswordSet: function (){
+
+        let header = 'password-set';
+        let body = '<x-password-set></x-password-set>';
+        this.showModal(header, body);
+    },
+
+    newProject: function () {
+        let header = 'new-project';
+        let body = '<x-project></x-project>';
+        this.showModal(header, body);
     }
 };
 
@@ -34,6 +77,14 @@ function receiveStateTagAppBroadcast(message) {
      */
     stateTagApp.log(staMessage);
 
+    if (staMessage.event === 401) { // token-expired
+        stateTagApp.commands.clear('user')
+        //stateTagApp.$write('user.token', '');
+    }
+
+    if (staMessage.event === 'stripe-required'){
+
+    }
 }
 
 stateTagApp["$broadcast"] = function (data) {
