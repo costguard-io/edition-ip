@@ -19,7 +19,7 @@ const stateTagApp = {
     },
 
     socket: {
-        production: "https://timesocket.io:3030",
+        production: "https://api.costguard.io:3000",
         development: "http://api.costguard.test:3000"
     },
 
