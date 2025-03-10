@@ -29,7 +29,7 @@ const activateStripeElements = function (selector) {
         //console.log('Activating Sripe Card Element');
         stripeCard.mount(selector);
     } catch (e) {
-        console.log(e);
+        //console.log(e);
         return;
     }
 

@@ -18,6 +18,18 @@ body {
     flex-direction: column;
     overflow: hidden;
 }
+
+.spinner {
+    padding: 1em;
+    background: #F7F7F7;
+    opacity: 0.8;
+
+    border-radius: 0.5em;
+
+    margin-top: 70vh;
+    margin-right: 40vw;
+}
+
 #top-bar {
     height: 5vh;
     background-color: #fff;
@@ -50,7 +62,7 @@ body {
     max-height: 5.5em;
     background: #fff;
     box-shadow: 0 -4px 6px rgba(0,0,0,0.1);
-    opacity: 0.9;
+    /*opacity: 0.9;*/
 }
 .small-icon {
     width: 30px;
@@ -256,7 +268,7 @@ x-bar-chart {
 }
 
 /* Spinner */
-.spinner {
+.cam-spinner {
     width: 60px;
     height: 60px;
     border: 8px solid #fff;
@@ -384,7 +396,7 @@ x-bar-chart {
 }
 
 .dropdown-menu ul{
-    max-height: 50vh;
+    max-height: 30vh;
     overflow-y: scroll;
     padding-top: 1em;
 }

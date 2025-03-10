@@ -56,7 +56,7 @@ stateTagApp["commands"] = {
     newProject: function () {
         let header = 'new-project';
         let body = '<x-project></x-project>';
-        this.showModal(header, body);
+        this.showModal(header, body, {x: true});
     }
 };
 

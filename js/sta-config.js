@@ -20,7 +20,7 @@ const stateTagApp = {
 
     socket: {
         production: "https://timesocket.io:3030",
-        development: "http://timesocket.io:3131"
+        development: "http://api.costguard.test:3000"
     },
 
     nebula: {

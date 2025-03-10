@@ -5,6 +5,13 @@ const endPoints = {
     currencies: 'api/currencies',
     search: {
         users: 'api/search/users?q={query}',
+        receipts: 'api/search/projects/{project}/receipts',
+        history: 'api/search/projects/{project}/history',
+        results: 'api/search/projects/{project}/history/{search}'
+    },
+    charts: {
+        pie: 'api/projects/{project}/pie',
+        bar: 'api/projects/{project}/bar',
     },
     password: {
         set: 'api/password/set',
@@ -17,7 +24,8 @@ const endPoints = {
         cancelMembership: 'api/stripe',
         upgradeOptions: 'api/stripe/plans',
         changePlan: 'api/stripe/plan',
-        license: 'api/license'
+        license: 'api/license',
+        changeLanguage: 'api/language'
     },
     permissions: {
         grant: 'api/projects/{project}/team/{member}',
@@ -29,21 +37,23 @@ const endPoints = {
         list: 'api/projects',
         update: 'api/projects/{project}',
         delete: 'api/projects/{project}',
-        team: 'api/projects/{project}/team'
+        team: 'api/projects/{project}/team',
     },
     files: {
         store: 'api/projects/{project}/files',
         list: 'api/projects/{project}/files',
-        delete: 'api/projects/{project}/files/{file}'
+        delete: 'api/projects/{project}/files/{file}',
+        process: 'api/projects/{project}/process',
     },
     receipts: {
         store: 'api/projects/{project}/receipts',
         list: 'api/projects/{project}/receipts',
-        detail: 'api/projects/{project}/receipts/{receipt}'
+        //detail: 'api/projects/{project}/receipts/{receipt}'
     }
 };
 
 endPoints.secure = [
+    ...Object.values(endPoints.charts),
     ...Object.values(endPoints.projects),
     ...Object.values(endPoints.files),
     ...Object.values(endPoints.receipts),
@@ -99,6 +109,6 @@ const isSecureEndpoint = (endpoint) => {
     // console.log('Checking endpoint:', endpoint);
 
     const isSecure = securePatterns.some(regex => regex.test(endpoint));
-    console.log(`Endpoint "${endpoint}" is secure:`, isSecure);
+    //console.log(`Endpoint "${endpoint}" is secure:`, isSecure);
     return isSecure;
 };
