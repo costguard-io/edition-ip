@@ -1,0 +1,26 @@
+CACHE MANIFEST
+# Version 1.1
+
+# CSS files
+css/bright.css
+css/candy.css
+css/crayon.css
+css/custom.css
+css/cutestrap.css
+css/hue.css
+css/strapon.css
+css/vibrant.css
+css/wild.css
+
+# JavaScript files
+js/custom.js
+js/sta-api.js
+js/sta-config.js
+js/sta-io.js
+js/sta-nebula.js
+js/sta-socket.js
+js/sta-state.js
+js/stripe.js
+
+# HTML file
+index.html
