@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# Version 1.2
+# Version 1.3
 
 # CSS files
 css/bright.css
@@ -24,3 +24,24 @@ js/stripe.js
 
 # HTML file
 index.html
+
+# Icon files
+favicon/apple-icon-57x57.png
+favicon/apple-icon-60x60.png
+favicon/apple-icon-72x72.png
+favicon/apple-icon-76x76.png
+favicon/apple-icon-114x114.png
+favicon/apple-icon-120x120.png
+favicon/apple-icon-144x144.png
+favicon/apple-icon-152x152.png
+favicon/apple-icon-180x180.png
+favicon/android-icon-36x36.png
+favicon/android-icon-48x48.png
+favicon/android-icon-72x72.png
+favicon/android-icon-96x96.png
+favicon/android-icon-144x144.png
+favicon/android-icon-192x192.png
+favicon/android-chrome-512x512.png
+favicon/favicon-16x16.png
+favicon/favicon-32x32.png
+favicon/favicon.ico
