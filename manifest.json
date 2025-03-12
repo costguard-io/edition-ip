@@ -4,8 +4,8 @@
  "start_url": "/",
  "scope": "/",
  "display": "standalone",
- "background_color": "#0d6efd",
- "theme_color": "#0d6efd",
+ "background_color": "#36a2eb",
+ "theme_color": "#36a2eb",
  "icons": [
   {
    "src": "/favicon/android-icon-36x36.png",
