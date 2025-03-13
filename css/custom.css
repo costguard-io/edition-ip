@@ -173,16 +173,16 @@ x-bar-chart {
 }
 
 .camera-container:not(.landscape) .controls,
-.audio-recorder-container:not(.landscape) .controls {
+.audio-recorder-container .confirm-controls {
     position: absolute;
-    top: 50vh;
+    top: 70vh;
     width: 100%;
     text-align: center;
     flex-direction: row;
 }
 
 .camera-container.landscape .controls,
-.audio-recorder-container.landscape .controls {
+.audio-recorder-container.landscape .confirm-controls{
     position: absolute;
     right: 20px;
     top: 50%;
