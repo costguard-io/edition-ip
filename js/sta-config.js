@@ -15,6 +15,7 @@ const stateTagApp = {
 
     api: {
         production: "https://api.CostGuard.io",
+        ngrok: "https://764db848ce99.ngrok.app",
         development: "http://api.CostGuard.test"
     },
 
