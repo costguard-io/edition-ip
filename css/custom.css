@@ -175,7 +175,7 @@ x-bar-chart {
 .camera-container:not(.landscape) .controls,
 .audio-recorder-container:not(.landscape) .controls {
     position: absolute;
-    bottom: 20px;
+    top: 90vh;
     width: 100%;
     text-align: center;
     flex-direction: row;
