@@ -497,10 +497,11 @@ Explanation of Adjustments:
 
 #version{
     position: absolute;
-    bottom: 0px;
-    right: 50%;
-    font-size:.5em;
+    width: 100vw;
+    display: block;
+    text-align: center;
+    bottom: 5.5em;
+    margin: auto;
+    font-size:.75em;
     color: #666666;
-
-    padding: 1em;
 }
