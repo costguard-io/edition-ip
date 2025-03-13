@@ -498,7 +498,7 @@ Explanation of Adjustments:
 #version{
     position: absolute;
     bottom: 0px;
-    right: 0px;
+    right: 50%;
     font-size:.5em;
     color: #666666;
 
