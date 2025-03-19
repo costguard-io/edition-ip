@@ -499,9 +499,9 @@ Explanation of Adjustments:
     position: absolute;
     width: 100vw;
     display: block;
-    text-align: center;
-    bottom: 4.5em;
+    left: 82.5vw;
+    bottom: 0.45em;
     margin: auto;
     font-size:.75em;
-    color: #666666;
+    color: #999999;
 }

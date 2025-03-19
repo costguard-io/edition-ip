@@ -1,4 +1,4 @@
-const stateTagApp = {
+stateTagApp = {
     namespace: 'x',
     disk: ['blackhole', localStorage, sessionStorage][1],
     cacheTimeout: 1 * 60 * 1000,
