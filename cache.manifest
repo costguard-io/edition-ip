@@ -1,32 +1,27 @@
 CACHE MANIFEST
-# Version 1.2.0
+# costguard-v1.2.4
 
-# CSS files
-css/custom.css
-css/cutestrap.css
-
-# JavaScript files
-js/custom.js
-js/sta-api.js
-js/sta-config.js
-js/sta-io.js
-js/sta-nebula.js
-js/sta-socket.js
-js/sta-state.js
-js/stripe.js
-
-# HTML file
+CACHE:
 index.html
+manifest.json
 
-# Icon files
-favicon/apple-touch-icon.png
-favicon/favicon.ico
-favicon/icon-192.png
-favicon/icon-512.png
-favicon/icon-maskable.png
+/favicon/apple-touch-icon.png
+/favicon/favicon.ico
+/favicon/icon-192.png
+/favicon/icon-512.png
+/favicon/icon-maskable.png
 
-# Manifest file (only need one)
-favicon/manifest.webmanifest
+/css/custom.css
+/css/cutestrap.css
+
+/js/custom.js
+/js/sta-api.js
+/js/sta-config.js
+/js/sta-io.js
+/js/sta-nebula.js
+/js/sta-socket.js
+/js/sta-state.js
+/js/stripe.js
 
 NETWORK:
 *

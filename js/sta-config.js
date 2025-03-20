@@ -15,12 +15,13 @@ stateTagApp = {
 
     api: {
         production: "https://api.CostGuard.io",
-        ngrok: "https://764db848ce99.ngrok.app",
+        ngrok: "http://box.ngrok.io",
         development: "http://api.CostGuard.test"
     },
 
     socket: {
         production: "https://api.costguard.io:3000",
+        ngrok: "http://tarek.ngrok.io:3000",
         development: "http://api.costguard.test:3000"
     },
 

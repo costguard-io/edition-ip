@@ -1,5 +1,5 @@
 // Stripe settings
-let stripeKey = (window.location.hostname.includes('localhost') || window.location.hostname.includes('.test'))
+let stripeKey = (window.location.hostname.includes('localhost') || window.location.hostname.includes('.test') || window.location.hostname.includes('ngrok'))
     ? 'pk_test_51QTQWQBf6hlTgk0U9vP2iDqx8vqR5AHEzs6WR1neGObUIrAu3hvvbVJKdQBfWP81alIAC0RIiC7hkAant0gjNuMx00VrjdiokU'
     : 'pk_live_51QTQWQBf6hlTgk0UCQblUE2hmMIUSoWG6eeZq7WiM2Futy4WrGA2GfVZkT9qRcUFvf4be56x4ZiAwU4Dpj1ruYx900bI6llX2h';
 
