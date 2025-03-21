@@ -7,7 +7,9 @@ const endPoints = {
         users: 'api/search/users?q={query}',
         receipts: 'api/search/projects/{project}/receipts',
         history: 'api/search/projects/{project}/history',
-        results: 'api/search/projects/{project}/history/{search}'
+        results: 'api/search/projects/{project}/history/{search}',
+        delete: 'api/search/projects/{project}/history/{search}',
+        redo: 'api/search/projects/{project}/history/{search}'
     },
     charts: {
         pie: 'api/projects/{project}/pie',
@@ -48,6 +50,7 @@ const endPoints = {
     receipts: {
         store: 'api/projects/{project}/receipts',
         list: 'api/projects/{project}/receipts',
+        delete: 'api/projects/{project}/receipts/{receipt}'
         //detail: 'api/projects/{project}/receipts/{receipt}'
     }
 };
@@ -61,35 +64,6 @@ endPoints.secure = [
     ...Object.values(endPoints.search),
     ...Object.values(endPoints.permissions),
 ];
-
-// const isSecureEndpoint = (endpoint) => {
-//     // Convert the secure endpoints into a list of regular expressions
-//     const securePatterns = endPoints.secure.map(pattern =>
-//         new RegExp(`^${pattern.replace(/{[^}]+}/g, '[^/]+')}$`)
-//     );
-//
-//     // Check if the endpoint matches any of the patterns
-//     return securePatterns.some(regex => regex.test(endpoint));
-// };
-
-
-// const isSecureEndpoint = (endpoint) => {
-//     // Normalize endpoint to ensure no trailing or leading slashes
-//     endpoint = endpoint.replace(/^\/|\/$/g, '');
-//
-//     // Convert secure endpoints into regex patterns
-//     const securePatterns = endPoints.secure.map(pattern =>
-//         new RegExp(`^${pattern.replace(/^\//, '').replace(/\/$/, '').replace(/{[^}]+}/g, '[^/]+')}$`)
-//     );
-//
-//     console.log('Secure patterns:', securePatterns);
-//     console.log('Checking endpoint:', endpoint);
-//
-//     // Check if the endpoint matches any of the secure patterns
-//     const isSecure = securePatterns.some(regex => regex.test(endpoint));
-//     console.log(`Endpoint "${endpoint}" is secure:`, isSecure);
-//     return isSecure;
-// };
 
 
 const isSecureEndpoint = (endpoint) => {
@@ -105,10 +79,5 @@ const isSecureEndpoint = (endpoint) => {
         );
     });
 
-    // console.log('Secure patterns:', securePatterns);
-    // console.log('Checking endpoint:', endpoint);
-
-    const isSecure = securePatterns.some(regex => regex.test(endpoint));
-    //console.log(`Endpoint "${endpoint}" is secure:`, isSecure);
-    return isSecure;
+    return securePatterns.some(regex => regex.test(endpoint));
 };
