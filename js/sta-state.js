@@ -122,8 +122,9 @@ stateTagApp['state'] = {
 
     modal: {
         content: {
-            header: "",
-            body: ""
+            header: '',
+            body: '',
+            image: '',
         },
         options: {
             x: true,
