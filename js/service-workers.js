@@ -1,4 +1,4 @@
-const CACHE_NAME = 'costguard-v1.2.10';
+const CACHE_NAME = 'costguard-v1.2.11';
 const urlsToCache = [
     '/index.html',
     '/manifest.json',
