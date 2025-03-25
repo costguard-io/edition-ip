@@ -56,6 +56,8 @@ stateTagApp["commands"] = {
     newProject: function () {
         let header = 'new-project';
         let body = '<x-project></x-project>';
+        this.clear('builder.files');
+        console.log(stateTagApp.$read('builder.files'))
         this.showModal(header, body, {x: true});
     }
 };
