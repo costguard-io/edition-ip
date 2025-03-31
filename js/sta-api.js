@@ -50,7 +50,8 @@ const endPoints = {
     receipts: {
         store: 'api/projects/{project}/receipts',
         list: 'api/projects/{project}/receipts',
-        delete: 'api/projects/{project}/receipts/{receipt}'
+        delete: 'api/projects/{project}/receipts/{receipt}',
+        update: 'api/projects/{project}/receipts/{receipt}'
         //detail: 'api/projects/{project}/receipts/{receipt}'
     }
 };

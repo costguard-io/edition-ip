@@ -90,6 +90,9 @@ x-bar-chart {
     z-index: 9999 !important;
     min-width: 350px !important;
 }
+.dropdown-menu-sm{
+    min-width: 0px !important;
+}
 
 .dropup .delete-button{
     position: relative;
