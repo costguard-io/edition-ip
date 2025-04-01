@@ -1,39 +1,492 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>CostGuard PWA Debug</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CostGuard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no, shrink-to-fit=no">
 
-    <!-- Corrected manifest.json for PWA -->
-    <link rel="manifest" href="/manifest.json">
-
-    <!-- (Optional) Reference old cache manifest if needed -->
-    <!-- <html manifest="/cache.manifest"> -->
-
-    <meta name="theme-color" content="#ffffff">
+    <!-- Keep existing icon and branding -->
+    <link href='//fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
+    <link rel="icon" href="//favicon.CostGuard.io/favicon.ico" sizes="32x32">
+    <meta name="apple-mobile-web-app-title" content="CostGuard">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#36A2EB">
+    <meta name="msapplication-TileColor" content="#36A2EB">
 
+    <!-- PWA manifest (using local /manifest.json as per your debug page) -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Import lit and the pwa-install custom element -->
     <script type="module">
         import '//esm.sh/lit';
         import '//esm.sh/@khmyznikov/pwa-install';
     </script>
 
+    <!-- Bootstrap CSS -->
+    <link href="//cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="//code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script> <!-- Include easing plugin -->
+
     <style>
-        body {
-            font-family: sans-serif;
-            background-color: #fff;
-            color: #000;
-            padding: 2rem;
+
+
+        #top-right-language-selector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 0px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
+
+        /* Remove blue focus outline on the select element */
+        .form-select:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+
+        #top-right-language-selector .form-select {
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            color: #333;
+            padding: 5px 0px 5px 10px;
+        }
+
+        body, html {
+            background-image: url('/install/bg_blue.webp');
+            background-repeat: no-repeat;
+            background-position: bottom 50% left 50%;
+            background-size: cover;
+            font-family: 'Lato', sans-serif;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .information ul li:not(:last-child) {
+            margin-bottom: 0.6em;
+        }
+
+        .bg-image {
+            background-image: url('/install/plaque.webp');
+            width: 100%;
+            height: 90%;
+            background-repeat: no-repeat;
+            background-position: bottom 0% left 10%;
+            background-size: contain;
+            z-index: 0;
+            opacity: 0.5;
+            animation: subtle-heartbeat 3.75s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95);
+        }
+
+        @keyframes subtle-heartbeat {
+            0% {
+                transform: scale(1);
+                opacity: 0.76;
+            }
+            8% {
+                transform: scale(1.005);
+                opacity: 0.765;
+            }
+            15% {
+                transform: scale(0.998);
+                opacity: 0.762;
+            }
+            20% {
+                transform: scale(1.01);
+                opacity: 0.77;
+            }
+            30% {
+                transform: scale(1);
+                opacity: 0.76;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0.76;
+            }
+        }
+
+        .content-area {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.37);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: scroll;
+            padding: 20px;
+        }
+
+        .content-area > * {
+            width: 100%;
+            max-width: min(100vw, 450px);
+            margin: 0vh auto 0vh auto;
+        }
+
+        /* Wide View */
+        @media (min-aspect-ratio: 3/4) {
+            .bg-image {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+
+            }
+
+            .content-area {
+                top: 0;
+                right: 0;
+                width: 30%;
+                min-width: fit-content;
+                height: 100%;
+            }
+        }
+
+        /* Tall View */
+        @media (max-aspect-ratio: 3/4) {
+            .bg-image {
+                top: 0;
+                height: 40%;
+                transition: height 0.3s ease;
+                background-position: bottom 0 left 50%;
+            }
+
+            .content-area {
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 60%;
+                transition: height 0.3s ease;
+            }
+        }
+
+        .information h1,
+        .information h4 {
+            font-weight: 100;
+        }
+
     </style>
 </head>
 <body>
-<h2>CostGuard PWA Debugging Page</h2>
-<p>Check your DevTools console for detailed logs.</p>
 
-<!-- Corrected manifest-url pointing to JSON manifest -->
+<div class="bg-image"></div>
+
+<!-- Stylish language selector in top right -->
+<div id="top-right-language-selector" class="language-selector">
+    <span class="spinner" id="language-spinner" style="display: none;"></span>
+    <select id="top-right-language-dropdown" name="language" class="form-select"></select>
+    <div id="progress-bar"></div>
+</div>
+
+<div class="content-area d-flex flex-column">
+    <div class="information text-muted">
+
+
+        <!-- Common header (not part of the language pack) -->
+        <h1 class="text-center mt-4">CostGuard</h1>
+
+        <!-- Translatable content using data-label attributes for all languages -->
+
+        <!-- Subtitle (h4) -->
+        <h4 class="text-center"
+            data-label-af="Eenvoudig Slimmer Besteding"
+            data-label-sq="Thjesht Shpenzime Më të Mençura"
+            data-label-am="ቀላል ብቁ የገንዘብ አቀራረብ"
+            data-label-ar="إنفاق أذكى ببساطة"
+            data-label-hy="Պարզորեն խելացի ծախսում"
+            data-label-az="Sadəcə Daha Ağıllı Xərcləmə"
+            data-label-eu="Gastuz adimentsuago sinpleki"
+            data-label-be="Проста разумныя выдаткі"
+            data-label-bn="সহজে স্মার্ট খরচ"
+            data-label-bs="Jednostavno Pametno Trošenje"
+            data-label-bg="Просто по-умно харчене"
+            data-label-my="အင်္ဂါရပ် ပြည့်ဝသော ငွေကုန်ကျစရိတ်"
+            data-label-ca="Despesa més intel·ligent, tot simplement"
+            data-label-ny="Kugwiritsa ntchito ndalama mwa nzeru"
+            data-label-zh="简单更智能的消费"
+            data-label-hr="Jednostavno Pametnije Trošenje"
+            data-label-cs="Jednoduše Chytřejší Výdaje"
+            data-label-da="Simpelt, Klogere Forbrug"
+            data-label-nl="Eenvoudig Slimmer Uitgeven"
+            data-label-en="Simply Smarter Spending"
+            data-label-eo="Simple Pli Saĝa Elspezo"
+            data-label-et="Lihtsalt Nutikam Kulutamine"
+            data-label-fi="Yksinkertaisesti Fiksumpaa Kulutusta"
+            data-label-fr="Dépenses Plus Intelligentes, Tout Simplement"
+            data-label-ka="მარტივად უფრო ჭკვიანი ხარჯვა"
+            data-label-de="Einfach Intelligenter Ausgeben"
+            data-label-el="Απλά Πιο Έξυπνες Δαπάνες"
+            data-label-gu="સરળતાથી વધુ સ્માર્ટ ખર્ચ"
+            data-label-ht="Depanse Pi Entelijan Senpleman"
+            data-label-ha="Kawai Ifu Ego N'ụzọ Amamihe"
+            data-label-he="הוצאות חכמות יותר, פשוט"
+            data-label-hi="सरल रूप से स्मार्ट खर्च"
+            data-label-hu="Egyszerűen Okosabb Kiadások"
+            data-label-is="Einfaldlega Víslegri Fjármál"
+            data-label-ig="Naanị Ifu Ego N'ụzọ Amamihe"
+            data-label-id="Pengeluaran Lebih Pintar, Sederhana"
+            data-label-ga="Caiteachas níos Chliste go Simplí"
+            data-label-it="Semplicemente Spese Più Intelligenti"
+            data-label-ja="シンプルに賢い支出"
+            data-label-jv="Ngentekake Dhuwit kanthi Pinter, Sederhana"
+            data-label-kn="ಸರಳವಾಗಿ ಚತುರ ಖರ್ಚು"
+            data-label-ks="سادہ طور پر ہوش مند خرچ"
+            data-label-km="ការចំណាយប្រាក់ឆ្លាតវៃយ៉ាងសាមញ្ញ"
+            data-label-ky="Жөнөкөй Акылдуу Сарптоо"
+            data-label-ko="단순하지만 더 똑똑한 소비"
+            data-label-ku="Xercê Zekî ya Hêsan"
+            data-label-lo="ການເສຍຈ່າຍງ່າຍແລະມີສະຫຼຸບສະເຫຼີມ"
+            data-label-la="Simpliciter Sapientius Impendens"
+            data-label-lv="Vienkārši Gudrāka Tērēšana"
+            data-label-lt="Paprasta Protingesnė Išlaidų Valdymas"
+            data-label-mk="Едноставно Паметно Трошење"
+            data-label-mg="Fandaniana Tsotra sy Mahira-tsaina"
+            data-label-ms="Perbelanjaan Lebih Bijak dengan Mudah"
+            data-label-ml="സുലഭവും ബുദ്ധിമാനുമായ ചെലവാക്കൽ"
+            data-label-mt="Inħallas B'mod Intelliġenti Sempliċi"
+            data-label-mr="सोपे आणि हुशार खर्च"
+            data-label-mn="Энгийн, Ухаалаг Зардал"
+            data-label-ne="साधारण तर बुद्दिमानी खर्च"
+            data-label-nb="Enkelt Smartere Forbruk"
+            data-label-nn="Enkelt Smartare Forbruk"
+            data-label-no="Enkelt Smartere Forbruk"
+            data-label-or="ସହଜ ଏବଂ ବୁଦ୍ଧିମତୀ ଖର୍ଚ୍ଚ"
+            data-label-om="Baay'ee Salphaa fi Ogummaa Qabeessa Baasii"
+            data-label-pa="ਸਰਲ ਤੇ ਸਮਝਦਾਰ ਖਰਚ"
+            data-label-ps="يوازې ساده او هوښيار مصرف"
+            data-label-fa="صرف‌هزینه ساده و هوشمند"
+            data-label-pl="Po Prosto Mądrzejsze Wydatki"
+            data-label-pt="Gastar de Forma Mais Inteligente e Simples"
+            data-label-ro="Cheltuieli Simplu și Mai Inteligente"
+            data-label-ru="Просто Умные Расходы"
+            data-label-sr="Једноставно Паметнија Потрошња"
+            data-label-si="සරළව බුද්ධිමත් වියදම්"
+            data-label-sk="Jednoduše Chytřejší Výdaje"
+            data-label-sl="Preprosto Pametno Porabo"
+            data-label-so="Kharashka Si Fudud oo Caqliga Leh"
+            data-label-es="Gastar de Forma Simple y Más Inteligente"
+            data-label-sw="Matumizi Rahisi ya Busara"
+            data-label-sv="Enkelt Smartare Utgifter"
+            data-label-tl="Simpleng Mas Matalinong Pag-gastos"
+            data-label-tg="Садо ва Донишмандона Харҷ кардан"
+            data-label-ta="எளிதில் புத்திசாலித்தனமான செலவு"
+            data-label-te="సులభంగా తెలివైన ఖర్చు"
+            data-label-th="การใช้จ่ายที่ง่ายและชาญฉลาด"
+            data-label-tr="Basitçe Daha Akıllı Harcama"
+            data-label-uk="Просто Розумні Витрати"
+            data-label-ur="سادہ اور سمجھدار خرچ"
+            data-label-uz="Shunchaki Aqlbovar Xarajat"
+            data-label-vi="Chi Tiêu Thông Minh Đơn Giản"
+            data-label-cy="Trethi'n Syml ac Yn Deallus"
+            data-label-yo="Lílò Owo Pẹ̀lú Ọgbọ́n Tó Rọrùn"
+            data-label-zu="Ukusetshenziswa Kwezezimali Ngokuhlakanipha Kalula">
+            Simply Smarter Spending
+        </h4>
+
+
+        <!-- Tagline (first paragraph) -->
+        <p class="text-center"
+           data-label-af="Moeiteloos | Aanpasbaar | Kragtig"
+           data-label-sq="Pa Mundim | Adaptues | Fuqishëm"
+           data-label-am="በቀላሉ | ተስማሚ | ኃይለኛ"
+           data-label-ar="سهل | متكيف | قوي"
+           data-label-hy="Հեշտ | Ադապտիվ | Հզոր"
+           data-label-az="Əməksiz | Uyğunlaşan | Güclü"
+           data-label-eu="Erraz | Egokigarria | Indartsu"
+           data-label-be="Без намаганняў | Адаптыўны | Магутны"
+           data-label-bn="সহজ | অভিযোজ্য | শক্তিশালী"
+           data-label-bs="Bez napora | Prilagodljivo | Moćno"
+           data-label-bg="Лесно | Адаптивно | Мощно"
+           data-label-my="ကြိုးစားမှုမလို | ချိန်ညှိနိုင်သော | အားကြီးသော"
+           data-label-ca="Sense esforç | Adaptatiu | Potent"
+           data-label-ny="Popanda zovuta | Zomwe zimayendera | Zambiri mphamvu"
+           data-label-zh="轻松 | 自适应 | 强大"
+           data-label-hr="Bez napora | Prilagodljivo | Moćno"
+           data-label-cs="Bez námahy | Adaptivní | Silný"
+           data-label-da="Uanstrengt | Tilpasningsdyktig | Kraftfuld"
+           data-label-nl="Moeiteloos | Aanpasbaar | Krachtig"
+           data-label-en="Effortless | Adaptive | Powerful"
+           data-label-eo="Senpeniga | Adaptanta | Potenca"
+           data-label-et="Pingutuseta | Kohanemisvõimeline | Võimas"
+           data-label-fi="Vaivattomasti | Mukautuva | Tehokas"
+           data-label-fr="Sans Effort | Adaptatif | Puissant"
+           data-label-ka="ხელოვნური ინტელექტის გაძლიერებული | ადაპტირებადი | ძლიერი"
+           data-label-de="Mühelos | Anpassungsfähig | Leistungsstark"
+           data-label-el="Χωρίς κόπο | Προσαρμοστικό | Ισχυρό"
+           data-label-gu="સહેલાઈથી | અનુરૂપ | શક્તિશાળી"
+           data-label-ht="San Efò | Adaptab | Pisan"
+           data-label-ha="Ba tare da wahala ba | Mai daidaitawa | Ƙarfi"
+           data-label-he="ללא מאמץ | אדפטיבי | עוצמתי"
+           data-label-hi="बिना मेहनत | अनुकूलनीय | शक्तिशाली"
+           data-label-hu="Erőfeszítés nélküli | Alkalmazkodó | Erőteljes"
+           data-label-is="Án áreynslu | Aðlögunarhæfur | Öflugur"
+           data-label-ig="Na-enweghị mgbagha | Na-agbanwe agbanwe | Dị ike"
+           data-label-id="Tanpa Usaha | Adaptif | Kuat"
+           data-label-ga="Gan struis | Inbhéartaí | Cumhachtach"
+           data-label-it="Senza Sforzo | Adattabile | Potente"
+           data-label-ja="手間いらず | 適応性 | 強力"
+           data-label-jv="Tanpa Usaha | Adaptif | Kuwat"
+           data-label-kn="ಪ್ರಯತ್ನರಹಿತ | ಹೊಂದಿಕೊಳ್ಳುವ | ಶಕ್ತಿಶಾಲಿ"
+           data-label-ks="بغیر مشقت | موافق | طاقتور"
+           data-label-km="គ្មានការខិតខំ | អាចបត់បែនបាន | មានសក្តានុពល"
+           data-label-ky="Емгинсиз | Ийкемдүү | Күчтүү"
+           data-label-ko="노력 없이 | 적응형 | 강력한"
+           data-label-ku="Bêhemtir | Xwecih | Hêzdar"
+           data-label-lo="ບໍ່ຕ້ອງພະຍາຍາມ | ປັບຕົວໄດ້ | ມີພລິບິດ"
+           data-label-la="Sine Labore | Adaptivus | Potens"
+           data-label-lv="Bez piepūles | Pielāgojams | Spēcīgs"
+           data-label-lt="Be pastangų | Prisitaikantis | Galingas"
+           data-label-mk="Без Напор | Прилагодливо | Моќно"
+           data-label-mg="Mora | Mifanaraka | Mahery"
+           data-label-ms="Tanpa Usaha | Mudah Menyesuaikan | Berkuasa"
+           data-label-ml="പ്രയാസരഹിതം | സാദ്ധ്യമാകുന്ന | ശക്തമായ"
+           data-label-mt="Bla Ħeffa | Adattabbli | Potenti"
+           data-label-mr="सोपा | अनुकूल | शक्तिशाली"
+           data-label-mn="Хичээлгүй | Дасан зохицох | Хүчирхэг"
+           data-label-ne="सरल | अनुकूल | शक्तिशाली"
+           data-label-nb="Uanstrengt | Tilpasningsdyktig | Kraftfull"
+           data-label-nn="Uanstrengt | Tilpassingsdyktig | Kraftfull"
+           data-label-no="Uanstrengt | Tilpasningsdyktig | Kraftfull"
+           data-label-or="ଅସହାୟ | ଅନୁକୂଳ | ଶକ୍ତିଶାଳୀ"
+           data-label-om="Hin dadhabin | Jijjiiramaaf mijataa | Humna qabu"
+           data-label-pa="ਬਿਨਾ ਮਿਹਨਤ | ਅਨੁਕੂਲ | ਤਾਕਤਵਰ"
+           data-label-ps="بې زحمت | بدلېدونکی | ځواکمن"
+           data-label-fa="بی‌دردسر | سازگار | قدرتمند"
+           data-label-pl="Bez Wysiłku | Adaptacyjne | Potężne"
+           data-label-pt="Sem Esforço | Adaptável | Poderoso"
+           data-label-ro="Fără Efort | Adaptabil | Puternic"
+           data-label-ru="Легко | Адаптивно | Мощно"
+           data-label-sr="Без Напора | Прилагодљиво | Моћно"
+           data-label-si="අවසර නොමැති | අනුකූල | ශක්තිමත්"
+           data-label-sk="Bez námahy | Adaptivní | Silný"
+           data-label-sl="Brez Truda | Prilagodljivo | Močno"
+           data-label-so="Kharashka Si Fudud oo Caqliga Leh"
+           data-label-es="Sin Esfuerzo | Adaptable | Potente"
+           data-label-sw="Bila Juhudi | Inayoweza Kubadilika | Imara"
+           data-label-sv="Ansträngningslöst | Anpassningsbart | Kraftfullt"
+           data-label-tl="Madali | Nababago | Malakas"
+           data-label-tg="Бе ҳангом | Мутобиқшаванда | Қудратманд"
+           data-label-ta="அணுகலற்றது | தகுந்தது | சக்திவாய்ந்தது"
+           data-label-te="కష్టం లేకుండా | అనుకూలంగా | శక్తివంతమైన"
+           data-label-th="ไร้ความยุ่งยาก | ปรับตัวได้ | ทรงพลัง"
+           data-label-tr="Zahmetsiz | Uyarlanabilir | Güçlü"
+           data-label-uk="Без зусиль | Адаптивний | Потужний"
+           data-label-ur="بغیر کسی کوشش کے | لچکدار | طاقتور"
+           data-label-uz="Mehnatsiz | Moslashuvchan | Kuchli"
+           data-label-vi="Không Cần Nỗ Lực | Thích Ứng | Mạnh Mẽ"
+           data-label-cy="Heb Ymrwymiad | Addasu | Pwerus"
+           data-label-yo="Lílò Owo Pẹ̀lú Ọgbọ́n Tó Rọrùn"
+           data-label-zu="Kalula | Kuyakwazi Ukuzivumelanisa | Amandla">
+            Effortless | Adaptive | Powerful
+        </p>
+
+        <h3 class="text-center"
+            data-label-af="INSTALLEER DIE APP"
+            data-label-sq="INSTALO APLIKACIONIN"
+            data-label-am="መተግበሪያን አስተካክል"
+            data-label-ar="ثَبِّتِ التَّطْبِيق"
+            data-label-hy="ԻՆՍՏԱԼԱՑԵՔ ԾԱՊԼԸ"
+            data-label-az="TƏTBİQİ QURAŞDIRIN"
+            data-label-eu="INSTALATU APLIKAZIOA"
+            data-label-be="ЎСТАНОВІЦЬ ПРАГРАМУ"
+            data-label-bn="অ্যাপটি ইনস্টল করুন"
+            data-label-bs="INSTALIRAJ APLIKACIJU"
+            data-label-bg="ИНСТАЛИРАЙТЕ ПРИЛОЖЕНИЕТО"
+            data-label-my="အက်ပ်ကိုတပ်ဆင်ပါ"
+            data-label-ca="INSTAL·LA L'APLICACIÓ"
+            data-label-ny="INSTALIRANI APP"
+            data-label-zh="安装应用程序"
+            data-label-hr="INSTALIRAJ APLIKACIJU"
+            data-label-cs="INSTALUJTE APLIKACI"
+            data-label-da="INSTALLER APPEN"
+            data-label-nl="INSTALLEER DE APP"
+            data-label-en="INSTALL THE APP"
+            data-label-eo="INSTALU LA APLIKO"
+            data-label-et="INSTALLIGE RAKEND"
+            data-label-fi="ASENNA SOVELLUS"
+            data-label-fr="INSTALLEZ L'APPLICATION"
+            data-label-ka="დაიინსტალირეთ აპლიკაცია"
+            data-label-de="INSTALLIEREN SIE DIE APP"
+            data-label-el="ΕΓΚΑΤΑΣΤΗΣΕ ΤΗΝ ΕΦΑΡΜΟΓΗ"
+            data-label-gu="એપ્લિકેશન ઇન્સ્ટોલ કરો"
+            data-label-ht="ENSTALYE APLIKASYON AN"
+            data-label-ha="SANYA MANHAJA"
+            data-label-he="התקן את האפליקציה"
+            data-label-hi="एप्लिकेशन इंस्टॉल करें"
+            data-label-hu="TELEPÍTSE AZ ALKALMAZÁST"
+            data-label-is="SETTU UPP FORRITINN"
+            data-label-ig="TỊNYE NGWA"
+            data-label-id="INSTAL APLIKASI"
+            data-label-ga="INSTALAIGH AN AIP"
+            data-label-it="INSTALLA L'APP"
+            data-label-ja="アプリをインストール"
+            data-label-jv="INSTAL APLIKASI"
+            data-label-kn="ಅ್ಯಪ್ ಅನ್ನು ಇನ್ಸ್‌ಟಾಲ್ ಮಾಡಿ"
+            data-label-ks="ایپ انسٹال کریں"
+            data-label-kk="ҚОЛДАНБАНЫ ОРНАТЫҢЫЗ"
+            data-label-km="ដំឡើងកម្មវិធី"
+            data-label-ky="КОЛДОНМОНУ КЫРЫҢЫЗ"
+            data-label-ko="앱을 설치하세요"
+            data-label-ku="SERLÊDANA BERNAMEYÊ BIKIN"
+            data-label-lo="ຕິດຕັ້ງແອັບ"
+            data-label-la="INSTALLE APPLICATIONEM"
+            data-label-lv="INSTALĒJET APLIKĀCIJU"
+            data-label-lt="INSTALIUOKITE PROGRAMĄ"
+            data-label-mk="ИНСТАЛИРАЈТЕ АПЛИКАЦИЈА"
+            data-label-mg="APETRAHO NY APP"
+            data-label-ms="PASANG APLIKASI"
+            data-label-ml="ആപ്പ് ഇൻസ്റ്റാൾ ചെയ്യുക"
+            data-label-mt="INSTALLA L-APP"
+            data-label-mr="अॅप इंस्टॉल करा"
+            data-label-mn="АПП-ыг Суулга"
+            data-label-ne="एप्लिकेशन स्थापना गर्नुहोस्"
+            data-label-nb="INSTALLER APPEN"
+            data-label-nn="INSTALLER APPEN"
+            data-label-no="INSTALLER APPEN"
+            data-label-or="ଏପ୍ ଇନଷ୍ଟଲ କରନ୍ତୁ"
+            data-label-om="APPI INSTALL GODHA"
+            data-label-pa="ਐਪ ਇੰਸਟਾਲ ਕਰੋ"
+            data-label-ps="اپلیکیشن نصب کړئ"
+            data-label-fa="نصب برنامه"
+            data-label-pl="ZAINSTALUJ APLIKACJĘ"
+            data-label-pt="INSTALE O APLICATIVO"
+            data-label-ro="INSTALAȚI APLICAȚIA"
+            data-label-ru="УСТАНОВИТЕ ПРИЛОЖЕНИЕ"
+            data-label-sr="ИНСТАЛИРАЈТЕ АПЛИКАЦИЈУ"
+            data-label-si="ඇප් එක ස්ථාපනය කරන්න"
+            data-label-sk="INŠTALUJTE APLIKÁCIU"
+            data-label-sl="NAMESTITE APLIKACIJO"
+            data-label-so="KA RAKIB APLIKESHANKA"
+            data-label-es="INSTALA LA APLICACIÓN"
+            data-label-sw="SASISHA APP"
+            data-label-sv="INSTALLERA APPEN"
+            data-label-tl="I-INSTALL ANG APP"
+            data-label-tg="НАСБ КАРЕД АПЛИКАСИЯРО"
+            data-label-ta="ஆப்பை நிறுவவும்"
+            data-label-te="ఆప్‌ను ఇన్‌స్టాల్ చేయండి"
+            data-label-th="ติดตั้งแอป"
+            data-label-tr="UYGULAMAYI KURUN"
+            data-label-uk="ВСТАНОВІТЬ ДОДАТОК"
+            data-label-ur="ایپ انسٹال کریں"
+            data-label-uz="ILOVANI O'RNATING"
+            data-label-vi="CÀI ĐẶT ỨNG DỤNG"
+            data-label-cy="GOSOD Y APP"
+            data-label-yo="ṢẸ́ INSTALL AAPP"
+            data-label-zu="FAKA I-APP">
+            INSTALL THE APP
+        </h3>
+
+
+    </div>
+
+    <div class="d-flex flex-column gap-2 text-center mt-4">
+        <button class="btn btn-primary" id="install-btn-android">Install on Android</button>
+        <button class="btn btn-secondary" id="install-btn-ios">Install on iOS</button>
+    </div>
+
+</div>
+
+<!-- The pwa-install custom element -->
 <pwa-install id="pwa-install"
              manifest-url="/manifest.json"
              manual-apple="true"
@@ -41,8 +494,127 @@
              disable-screenshots="true">
 </pwa-install>
 
+
 <script>
-    // Service Worker registration with logs
+    const apiUrl = (window.location.hostname.includes('.test') || window.location.hostname.includes('ngrok'))
+        ? '//api.costguard.test/api/'
+        : '//api.costguard.io/api/';
+
+
+    function updateLanguageContent(selectedLanguage) {
+
+        $("[data-placeholder-en]").each(function () {
+            const placeholderText = $(this).data(`placeholder-${selectedLanguage}`);
+            $(this).attr("placeholder", placeholderText || $(this).data("placeholder-en"));
+        });
+        $("[data-label-en]").each(function () {
+            const labelText = $(this).data(`label-${selectedLanguage}`);
+            $(this).text(labelText || $(this).data("label-en"));
+        });
+    }
+
+    function detectPreferredLanguage(language) {
+        if (navigator.languages && navigator.languages.length > 0) {
+            language = navigator.languages[0];
+        } else if (navigator.language) {
+            language = navigator.language;
+        }
+        return language.substring(0, 2);
+    }
+
+    // Populate both language dropdowns
+    function populateLanguageDropdowns(data) {
+        const topRightDropdown = $("#top-right-language-dropdown");
+        topRightDropdown.empty();
+        const languages = Object.entries(data).sort(([, nameA], [, nameB]) => nameA.localeCompare(nameB));
+        languages.forEach(([code, name]) => {
+            topRightDropdown.append(new Option(name, code));
+        });
+    }
+
+    function setupLanguages() {
+        $("#language-spinner").show();
+        $.getJSON(apiUrl.concat('languages'), function (data) {
+            const defaultLang = 'en';
+            const detectedLanguage = detectPreferredLanguage(defaultLang);
+            const availableLanguages = Object.keys(data);
+            const preferredLanguage = availableLanguages.includes(detectedLanguage)
+                ? detectedLanguage
+                : defaultLang;
+            populateLanguageDropdowns(data);
+            const storedLanguage = localStorage.getItem("selectedLanguage") || preferredLanguage;
+            $("#top-right-language-dropdown").val(storedLanguage);
+            $("#language-spinner").hide();
+            updateLanguageContent(storedLanguage);
+        });
+    }
+
+    $(document).ready(function () {
+        var tallMediaQuery = window.matchMedia('(max-aspect-ratio: 3/4)');
+        var $contentArea = $('.content-area');
+        var $bgImage = $('.bg-image');
+
+        function resetHeights() {
+            $contentArea.css('height', '');
+            $bgImage.css('height', '');
+        }
+
+        $contentArea.on('scroll', function () {
+            if (tallMediaQuery.matches) {
+                var scrollPos = $(this).scrollTop();
+                if (scrollPos > 0) {
+                    $contentArea.css('height', '80%');
+                    $bgImage.css('height', '20%');
+                } else {
+                    $contentArea.css('height', '60%');
+                    $bgImage.css('height', '40%');
+                }
+            }
+        });
+
+        tallMediaQuery.addEventListener('change', function (e) {
+            if (!e.matches) {
+                resetHeights();
+            }
+        });
+
+        $(window).on('resize', function () {
+            if (!tallMediaQuery.matches) {
+                resetHeights();
+            }
+        });
+
+        // Two-way binding for language dropdowns
+        $("#top-right-language-dropdown").on("change", function () {
+            const selectedLanguage = $(this).val();
+            localStorage.setItem("selectedLanguage", selectedLanguage);
+            updateLanguageContent(selectedLanguage);
+        });
+
+        setupLanguages();
+
+        const dropdown = document.getElementById('top-right-language-dropdown');
+        const progressBar = document.getElementById('progress-bar');
+
+        dropdown.addEventListener('change', function () {
+            // 1. Show the progress bar and reset width to 0%
+            $("#progress-bar").show().css("width", "0%");
+            // 2. Animate from 0% to 100% over 300ms with easing ("swing")
+            $("#progress-bar").animate({width: "100%"}, 300, "swing", function () {
+                // 3. Hide the progress bar after animation
+                $(this).hide();
+                // 4. Reset the width to 0%
+                $(this).css("width", "0%");
+            });
+        });
+
+    });
+</script>
+
+
+<!-- PWA-specific Service Worker and install prompt logic -->
+<script>
+    // Register Service Worker with logging
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/js/service-workers.js')
             .then(reg => {
@@ -57,13 +629,13 @@
         console.error('[Main] Service Workers not supported.');
     }
 
-    // beforeinstallprompt event logging
+    // Handle beforeinstallprompt
     window.addEventListener('beforeinstallprompt', (e) => {
         console.log('[Main] beforeinstallprompt event triggered:', e);
         window.deferredPrompt = e;
     });
 
-    // Immediate PWA prompt trigger with delay
+    // Show PWA install dialog after a delay
     window.addEventListener('DOMContentLoaded', () => {
         const pwaInstallEl = document.getElementById('pwa-install');
 
@@ -83,7 +655,32 @@
     window.addEventListener('appinstalled', () => {
         console.log('[Main] PWA has been successfully installed.');
     });
+
+    // Manual Android install button
+    document.getElementById('install-btn-android').addEventListener('click', function () {
+        if (window.deferredPrompt) {
+            window.deferredPrompt.prompt();
+            window.deferredPrompt.userChoice.then(choiceResult => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('[Main] Android PWA install accepted.');
+                } else {
+                    console.log('[Main] Android PWA install dismissed.');
+                }
+                window.deferredPrompt = null;
+            });
+        } else {
+            alert("Android installation prompt not available. Please use Chrome.");
+        }
+    });
+
+    // Manual iOS instructions button
+    document.getElementById('install-btn-ios').addEventListener('click', function () {
+        alert("To install CostGuard on iOS:\n\n1. Tap the Share button in Safari\n2. Select 'Add to Home Screen'\n3. Confirm by tapping 'Add'");
+    });
 </script>
+
+<!-- Bootstrap JS -->
+<script src="//cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 
 </body>
 </html>
