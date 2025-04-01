@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CostGuard PWA Debug</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Corrected manifest.json for PWA -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- (Optional) Reference old cache manifest if needed -->
+    <!-- <html manifest="/cache.manifest"> -->
+
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <script type="module">
+        import 'https://esm.sh/lit';
+        import 'https://esm.sh/@khmyznikov/pwa-install';
+    </script>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #fff;
+            color: #000;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+<h2>CostGuard PWA Debugging Page</h2>
+<p>Check your DevTools console for detailed logs.</p>
+
+<!-- Corrected manifest-url pointing to JSON manifest -->
+<pwa-install id="pwa-install"
+             manifest-url="/manifest.json"
+             manual-apple="true"
+             manual-chrome="true"
+             disable-screenshots="true">
+</pwa-install>
+
+<script>
+    // Service Worker registration with logs
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/js/service-workers.js')
+            .then(reg => {
+                console.log('[Main] Service Worker registered:', reg);
+
+                reg.addEventListener('updatefound', () => {
+                    console.log('[Main] Service Worker update found:', reg.installing);
+                });
+            })
+            .catch(err => console.error('[Main] Service Worker registration failed:', err));
+    } else {
+        console.error('[Main] Service Workers not supported.');
+    }
+
+    // beforeinstallprompt event logging
+    window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('[Main] beforeinstallprompt event triggered:', e);
+        window.deferredPrompt = e;
+    });
+
+    // Immediate PWA prompt trigger with delay
+    window.addEventListener('DOMContentLoaded', () => {
+        const pwaInstallEl = document.getElementById('pwa-install');
+
+        if (pwaInstallEl && typeof pwaInstallEl.showDialog === 'function') {
+            console.log('[Main] Attempting to trigger PWA install dialog.');
+
+            setTimeout(() => {
+                pwaInstallEl.showDialog();
+                console.log('[Main] showDialog() called on pwa-install component.');
+            }, 1000);
+        } else {
+            console.error('[Main] pwa-install element not found or showDialog unavailable.');
+        }
+    });
+
+    // Log successful app installation
+    window.addEventListener('appinstalled', () => {
+        console.log('[Main] PWA has been successfully installed.');
+    });
+</script>
+
+</body>
+</html>
