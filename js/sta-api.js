@@ -27,7 +27,8 @@ const endPoints = {
         upgradeOptions: 'api/stripe/plans',
         changePlan: 'api/stripe/plan',
         license: 'api/license',
-        changeLanguage: 'api/language'
+        changeLanguage: 'api/language',
+        device: 'api/member/devices'
     },
     permissions: {
         grant: 'api/projects/{project}/team/{member}',

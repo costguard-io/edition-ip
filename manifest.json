@@ -1,27 +1,28 @@
 {
- "name": "CostGuard",
- "short_name": "CostGuard",
- "start_url": "/",
- "scope": "/",
- "display": "standalone",
- "background_color": "#36a2eb",
- "theme_color": "#36a2eb",
- "icons": [
-  {
-   "src": "//favicon.CostGuard.io/icon-192.png",
-   "sizes": "192x192",
-   "type": "image/png"
-  },
-  {
-   "src": "//favicon.CostGuard.io/icon-512.png",
-   "sizes": "512x512",
-   "type": "image/png"
-  },
-  {
-   "src": "//favicon.CostGuard.io/icon-maskable.png",
-   "sizes": "512x512",
-   "type": "image/png",
-   "purpose": "maskable"
-  }
- ]
+  "name": "CostGuard",
+  "short_name": "CostGuard",
+  "start_url": "/fuck.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#36a2eb",
+  "theme_color": "#36a2eb",
+  "icons": [
+    {
+      "src": "//favicon.CostGuard.io/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "//favicon.CostGuard.io/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "//favicon.CostGuard.io/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "gcm_sender_id": "103953800507"
 }

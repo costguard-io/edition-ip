@@ -146,7 +146,7 @@ function initGlobalStateWatchers(stateObserver) {
                 stateTagApp.commands.clear('stripe');
                 stateTagApp.commands.showLogin()
             } else {
-                stateTagApp.commands.hideModal();
+                //stateTagApp.commands.hideModal();
             }
         }
     );

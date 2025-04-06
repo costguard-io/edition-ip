@@ -30,6 +30,7 @@ stateTagApp["commands"] = {
 
     hideModal: function () {
         this.clear('modal');
+        this.clear('errors.modal')
     },
 
     showLogin: function () {
@@ -87,6 +88,19 @@ function receiveStateTagAppBroadcast(message) {
     if (staMessage.event === 'stripe-required'){
 
     }
+
+    // handle login-success broadcast
+    if (staMessage.event === 'login-success') {
+        const jwt = staMessage.token;
+        const user = staMessage.user;
+
+        localStorage.setItem('jwt_token', jwt);
+        localStorage.setItem('user', JSON.stringify(user));
+
+        if (typeof setupPush === 'function') {
+            setupPush(jwt);
+        }
+    }
 }
 
 stateTagApp["$broadcast"] = function (data) {
@@ -138,3 +152,4 @@ function staBindEvent(element, eventName, eventHandler) {
 document.addEventListener("DOMContentLoaded", function () {
     staBindEvent(window, "message", receiveStateTagAppBroadcast);
 });
+
