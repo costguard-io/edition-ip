@@ -1,7 +1,7 @@
 {
   "name": "CostGuard",
   "short_name": "CostGuard",
-  "start_url": "/fuck.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#36a2eb",
