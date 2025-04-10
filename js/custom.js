@@ -64,6 +64,7 @@ const registerPushDevice = function(jwt) {
         }
 
         requestNotificationPermission().then(function(permission) {
+            // 'granted', 'denied', or 'default'
             console.log('[registerPushDevice] Notification permission:', permission);
 
             if (permission !== 'granted') {
