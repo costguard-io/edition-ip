@@ -53,12 +53,14 @@ const registerPushDevice = function(jwt) {
             return resolve(null);
         }
 
-        // Check if running in standalone/PWA mode
         const isStandalone =
             window.matchMedia('(display-mode: standalone)').matches ||
             window.navigator.standalone;
 
-        if (!isStandalone) {
+// Allow regular desktop browsers in non-production environments
+        const allowNonStandalone = stateTagApp.env !== 'production';
+
+        if (!isStandalone && !allowNonStandalone) {
             console.warn('[registerPushDevice] Not running in standalone/PWA mode.');
             return resolve(null);
         }
