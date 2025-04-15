@@ -4,20 +4,22 @@ importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-comp
 
 // Initialize Firebase in the service worker context
 firebase.initializeApp({
-    apiKey: "AIzaSyA10RmmogaAHz9JWXiwivq-y5dSywJ9ik",
-    authDomain: "costguard-c2f20.firebaseapp.com",
-    projectId: "costguard-c2f20",
-    storageBucket: "costguard-c2f20.firebasestorage.app",
-    messagingSenderId: "83067432426",
-    appId: "1:83067432426:web:77fb336ce85c8363f69693"
+    apiKey: "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
+    authDomain: "costguard.firebaseapp.com",
+    projectId: "costguard",
+    storageBucket: "costguard.firebasestorage.app",
+    messagingSenderId: "873736687737",
+    appId: "1:873736687737:web:be444e90d27f23364544a8"
+
 });
+
+console.log('Service Worker Loaded');
 
 // Initialize Firebase Messaging
 const messaging = firebase.messaging();
 
 // Handle background messages
 messaging.onBackgroundMessage((payload) => {
-    console.log('[Service Worker] Received background message:', payload);
     const notificationTitle = payload.notification.title;
     const notificationOptions = {
         body: payload.notification.body,
@@ -52,46 +54,45 @@ const urlsToCache = [
     '/js/stripe.js'
 ];
 
-// Install event with detailed logging
+// Install event - cache resources
 self.addEventListener('install', event => {
-    console.log('[ServiceWorker] Install event starting.');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
-                console.log('[ServiceWorker] Caching URLs:', urlsToCache);
                 return cache.addAll(urlsToCache);
             })
             .then(() => self.skipWaiting())
     );
 });
 
-// Activate event with cache cleanup logging
+// Activate event - clean up old caches
 self.addEventListener('activate', event => {
-    console.log('[ServiceWorker] Activating new service worker...');
     event.waitUntil(
         caches.keys().then(cacheNames => Promise.all(
             cacheNames.filter(name => name !== CACHE_NAME).map(oldCache => {
-                console.log('[ServiceWorker] Deleting old cache:', oldCache);
                 return caches.delete(oldCache);
             })
-        )).then(() => {
-            console.log('[ServiceWorker] Clients claimed.');
-            return self.clients.claim();
-        })
+        )).then(() => self.clients.claim())
     );
 });
 
-// Fetch event with cache hit/miss logging
+// Fetch event - serve from cache and handle errors
 self.addEventListener('fetch', event => {
-    console.log('[ServiceWorker] Fetch request for:', event.request.url);
     event.respondWith(
         caches.match(event.request).then(response => {
+            // Return the cached response if available
             if (response) {
-                console.log('[ServiceWorker] Cache hit:', event.request.url);
                 return response;
             }
-            console.log('[ServiceWorker] Cache miss, fetching:', event.request.url);
-            return fetch(event.request);
+            // If not in cache, fetch the resource from the network.
+            return fetch(event.request)
+                .catch(error => {
+                    console.error('[ServiceWorker] Fetch failed for:', event.request.url, error);
+                    // Optionally, if the request is a navigation, return a fallback:
+                    if (event.request.mode === 'navigate') {
+                        return caches.match('/index.html');
+                    }
+                });
         })
     );
 });
