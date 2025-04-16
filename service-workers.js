@@ -1,60 +1,35 @@
-// service-worker.js
-
-// Import only Firebase core (no messaging compat)
+// Import Firebase libraries for Messaging
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
 
+// Initialize Firebase in the service worker context
+// -1
 firebase.initializeApp({
-    apiKey:    "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
-    authDomain:"costguard.firebaseapp.com",
+    apiKey: "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
+    authDomain: "costguard.firebaseapp.com",
     projectId: "costguard",
-    storageBucket:"costguard.firebasestorage.app",
-    messagingSenderId:"873736687737",
-    appId:     "1:873736687737:web:be444e90d27f23364544a8"
+    storageBucket: "costguard.firebasestorage.app",
+    messagingSenderId: "873736687737",
+    appId: "1:873736687737:web:be444e90d27f23364544a8"
+
 });
 
-// --- PUSH: catch every incoming payload ---
-self.addEventListener('push', event => {
-    let payload = {};
-    try {
-        payload = event.data.json();
-    } catch (e) {
-        console.error('[SW] push but invalid JSON:', e);
-    }
+// Initialize Firebase Messaging
+const messaging = firebase.messaging();
 
-    const title = payload.notification?.title || 'Notification';
-    const body  = payload.notification?.body  || '';
-    const data  = payload.data || payload;
-
-    const options = {
-        body,
-        icon: '/favicon/favicon.ico',
-        data
+// Handle background messages
+messaging.onBackgroundMessage((payload) => {
+    //console.log('[Service Worker] Received background message:', payload);
+    const notificationTitle = payload.notification.title;
+    const notificationOptions = {
+        body: payload.notification.body,
+        icon: '/favicon/favicon.ico'
     };
-
-    event.waitUntil(self.registration.showNotification(title, options));
+    self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-// --- CLICK: deep‑link with JSON in URL hash ---
-self.addEventListener('notificationclick', event => {
-    event.notification.close();
-
-    const data = event.notification.data || {};
-    const url  = '/#notification=' +
-        encodeURIComponent(JSON.stringify(data));
-
-    event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true })
-            .then(winList => {
-                if (winList.length) {
-                    return winList[0].navigate(url).then(w => w.focus());
-                }
-                return clients.openWindow(url);
-            })
-    );
-});
-
-// --- CACHING: install, activate, fetch ---
-const CACHE_NAME = 'costguard-v#BUILD#';  // bump on each deploy
+// --- Caching Logic ---
+const CACHE_NAME = 'costguard-v#BUILD#';
 const urlsToCache = [
     '/index.html',
     '/cache.manifest',
@@ -79,28 +54,46 @@ const urlsToCache = [
     '/js/stripe.js'
 ];
 
+// Install event with detailed logging
 self.addEventListener('install', event => {
+    //console.log('[ServiceWorker] Install event starting.');
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(urlsToCache))
+            .then(cache => {
+                //console.log('[ServiceWorker] Caching URLs:', urlsToCache);
+                return cache.addAll(urlsToCache);
+            })
             .then(() => self.skipWaiting())
     );
 });
 
+// Activate event with cache cleanup logging
 self.addEventListener('activate', event => {
+    //console.log('[ServiceWorker] Activating new service worker...');
     event.waitUntil(
-        caches.keys().then(names =>
-            Promise.all(
-                names
-                    .filter(name => name !== CACHE_NAME)
-                    .map(old => caches.delete(old))
-            )
-        ).then(() => self.clients.claim())
+        caches.keys().then(cacheNames => Promise.all(
+            cacheNames.filter(name => name !== CACHE_NAME).map(oldCache => {
+                //console.log('[ServiceWorker] Deleting old cache:', oldCache);
+                return caches.delete(oldCache);
+            })
+        )).then(() => {
+            //console.log('[ServiceWorker] Clients claimed.');
+            return self.clients.claim();
+        })
     );
 });
 
+// Fetch event with cache hit/miss logging
 self.addEventListener('fetch', event => {
+    console.log('[ServiceWorker] Fetch request for:', event.request.url);
     event.respondWith(
-        caches.match(event.request).then(resp => resp || fetch(event.request))
+        caches.match(event.request).then(response => {
+            if (response) {
+                console.log('[ServiceWorker] Cache hit:', event.request.url);
+                return response;
+            }
+            console.log('[ServiceWorker] Cache miss, fetching:', event.request.url);
+            return fetch(event.request);
+        })
     );
 });
