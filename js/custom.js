@@ -11,24 +11,16 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
-
 const messaging = firebase.messaging();
 
-// Immediately register SW
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js').then(reg => {
-        console.log('[SW] Registered:', reg.scope);
-    });
-}
-
-// Handle messages from SW
+// React to Service Worker postMessage
 navigator.serviceWorker.addEventListener('message', event => {
-    if (event.data?.type === 'notification-click') {
-        handleNotificationData(event.data.data);
-    }
+    const { type, msg, data } = event.data || {};
+    if (type === 'sw-log') console.log('[FROM SW]', msg, data);
+    if (type === 'notification-click') handleNotificationData(data);
 });
 
-// Initial page-load notification handling
+// Handle notification hash on initial load
 window.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash;
     if (hash.startsWith('#notification=')) {
@@ -41,11 +33,15 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function registerPushDevice(jwt) {
+function registerPushDevice() {
     return Notification.requestPermission().then(permission => {
         if (permission !== 'granted') return null;
         return navigator.serviceWorker.ready;
     }).then(reg => {
+        if (!reg || !reg.active) {
+            console.warn('[registerPushDevice] SW not active');
+            return null;
+        }
         return messaging.getToken({
             vapidKey: VAPID_KEY,
             serviceWorkerRegistration: reg
