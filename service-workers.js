@@ -1,6 +1,5 @@
 // service‑workers.js
 
-// Import Firebase core + messaging
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
 
@@ -14,28 +13,26 @@ firebase.initializeApp({
 });
 
 function swLog(msg, data) {
-    clients.matchAll({ includeUncontrolled: true }).then(clientsArr =>
-        clientsArr.forEach(c => c.postMessage({ type:'sw-log', msg, data }))
-    );
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+        .then(windows => windows.forEach(win =>
+            win.postMessage({ type:'sw-log', msg, data })
+        ));
     console.log('[SW]', msg, data);
 }
 
 self.addEventListener('push', event => {
     let payload = {};
     if (event.data) {
-        try {
-            payload = event.data.json();
-        } catch (e) {
-            swLog('push: invalid JSON', event.data.text());
-        }
+        try { payload = event.data.json(); }
+        catch (e) { swLog('push: invalid JSON', event.data.text()); }
     }
     swLog('Push received', payload);
 
-    const title   = payload.notification?.title   || 'Notification';
+    const title = payload.notification?.title || 'Notification';
     const options = {
-        body:    payload.notification?.body    || '',
-        icon:    '/favicon/favicon.ico',
-        data:    payload.data || payload
+        body: payload.notification?.body || '',
+        icon: '/favicon/favicon.ico',
+        data: payload.data || payload
     };
 
     event.waitUntil(
@@ -48,20 +45,22 @@ self.addEventListener('notificationclick', event => {
     const data = event.notification.data || {};
     swLog('Notification click', data);
 
-    const url = '/?notification=' + encodeURIComponent(JSON.stringify(data));
+    const hash = '#notification=' + encodeURIComponent(JSON.stringify(data));
 
     event.waitUntil(
-        clients.matchAll({ type:'window', includeUncontrolled:true }).then(winList => {
-            if (winList.length) {
-                return winList[0].navigate(url).then(win => {
-                    win.focus();
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then(windows => {
+                if (windows.length) {
+                    const win = windows[0];
                     win.postMessage({ type:'notification-click', data });
-                });
-            }
-            return clients.openWindow(url).then(newWin => {
-                if (newWin) newWin.postMessage({ type:'notification-click', data });
-            });
-        })
+                    win.focus();
+                    return win.navigate('/' + hash);
+                }
+                return clients.openWindow('/' + hash)
+                    .then(newWin => {
+                        if (newWin) newWin.postMessage({ type:'notification-click', data });
+                    });
+            })
     );
 });
 
@@ -101,8 +100,7 @@ self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(keys =>
             Promise.all(
-                keys.filter(key => key !== CACHE_NAME)
-                    .map(oldKey => caches.delete(oldKey))
+                keys.filter(k => k !== CACHE_NAME).map(old => caches.delete(old))
             )
         ).then(() => self.clients.claim())
     );
