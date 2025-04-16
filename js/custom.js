@@ -1,6 +1,5 @@
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
-// Use EXACT values from your Firebase Console "Project settings > General > Your apps"
 const firebaseConfig = {
     apiKey: "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
     authDomain: "costguard.firebaseapp.com",
@@ -11,130 +10,85 @@ const firebaseConfig = {
 };
 
 function requestNotificationPermission() {
-    return new Promise((resolve, reject) => {
-        Notification.requestPermission(result => {
-            resolve(result);
-        });
-    });
+    return Notification.requestPermission();
 }
 
 function waitForServiceWorker(timeout = 5000) {
-    return new Promise((resolve, reject) => {
-        navigator.serviceWorker.ready.then(resolve).catch(reject);
-        setTimeout(() => {
-            reject(new Error('Service worker ready timeout'));
-        }, timeout);
-    });
+    return Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise((_, rej) => setTimeout(() => rej(new Error('SW ready timeout')), timeout))
+    ]);
 }
-
-const destroyMode = function() {
-    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (let reg of registrations) reg.unregister();
-        caches.keys().then(function(names) {
-            for (let name of names) caches.delete(name);
-            location.reload(true);
-        });
-    });
-};
 
 const registerPushDevice = function(jwt) {
-    console.log('[registerPushDevice] Starting with JWT:', jwt);
-    return new Promise((resolve) => {
-        if (!('serviceWorker' in navigator)) {
-            console.warn('[registerPushDevice] Service workers not supported.');
-            return resolve(null);
-        }
-
-        if (!firebase || !firebase.messaging) {
-            console.warn('[registerPushDevice] Firebase messaging not available.');
-            return resolve(null);
-        }
-
-        const isStandalone =
-            window.matchMedia('(display-mode: standalone)').matches ||
-            window.navigator.standalone;
-
-        // Allow regular desktop browsers in non-production environments
-        const allowNonStandalone = stateTagApp.env !== 'production';
-
-        if (!isStandalone && !allowNonStandalone) {
-            console.warn('[registerPushDevice] Not running in standalone/PWA mode.');
-            return resolve(null);
-        }
-
-        requestNotificationPermission().then(function(permission) {
-            // 'granted', 'denied', or 'default'
-            console.log('[registerPushDevice] Notification permission:', permission);
-
-            if (permission !== 'granted') {
-                console.warn('[registerPushDevice] Permission not granted.');
-                return resolve(null);
-            }
-
-            waitForServiceWorker().then(function(registration) {
-                console.log('[registerPushDevice] Service worker is ready:', registration);
-
-                const messaging = firebase.messaging();
-                messaging.getToken({
-                    vapidKey: VAPID_KEY,
-                    serviceWorkerRegistration: registration
-                }).then(function(token) {
-                    console.log('[registerPushDevice] FCM Token:', token);
-                    if (!token) {
-                        console.warn('[registerPushDevice] No token returned.');
-                        return resolve(null);
-                    }
-                    const agent = navigator.userAgent;
-                    let platform = 'web';
-                    if (/android/i.test(agent)) platform = 'android';
-                    else if (/iphone|ipad|ipod/i.test(agent)) platform = 'ios';
-
-                    const result = { token, platform, agent };
-                    console.log('[registerPushDevice] Success:', result);
-                    resolve(result);
-                }).catch(function(err) {
-                    console.error('[registerPushDevice] getToken failed:', err);
-                    resolve(null);
-                });
-            }).catch(function(err) {
-                console.error('[registerPushDevice] Service worker not ready:', err);
-                resolve(null);
-            });
-        }).catch(function(err) {
-            console.error('[registerPushDevice] Notification permission request failed:', err);
-            resolve(null);
+    console.log('[registerPushDevice] JWT:', jwt);
+    return requestNotificationPermission()
+        .then(permission => {
+            console.log('[registerPushDevice] Permission:', permission);
+            if (permission !== 'granted') return null;
+            return waitForServiceWorker();
+        })
+        .then(registration => {
+            if (!registration) return null;
+            const messaging = firebase.messaging();
+            return messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
+        })
+        .then(token => {
+            if (!token) return null;
+            const agent = navigator.userAgent;
+            const platform = /android/i.test(agent) ? 'android'
+                : /iphone|ipad|ipod/i.test(agent) ? 'ios'
+                    : 'web';
+            const result = { token, platform, agent };
+            console.log('[registerPushDevice] Success:', result);
+            return result;
+        })
+        .catch(err => {
+            console.error('[registerPushDevice] Error:', err);
+            return null;
         });
-    });
-}
+};
 
-// Initialize Firebase if it hasn't been initialized yet
-document.addEventListener("DOMContentLoaded", function() {
+// Init Firebase
+document.addEventListener("DOMContentLoaded", () => {
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
         console.log("Firebase initialized");
     }
 });
 
-// Register the service worker
+// Register SW
 if ('serviceWorker' in navigator) {
-    // Make sure the file name here matches your service worker file name
     navigator.serviceWorker.register('/service-workers.js', { scope: '/' })
-        .then(function(reg) {
-            console.log('[Service Worker] Registered successfully:', reg);
-        })
-        .catch(function(err) {
-            console.error('[Service Worker] Registration failed:', err);
-        });
-} else {
-    console.warn('[Service Worker] Not supported in this browser.');
+        .then(reg => console.log('[SW] Registered:', reg))
+        .catch(err => console.error('[SW] Reg failed:', err));
 }
 
-// Listen for messages from the service worker (e.g. for notification clicks)
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data && event.data.type === 'notification-click') {
-            console.log('Received notification click data:', event.data.data);
-            // Process the data here (e.g. navigate or execute a command)
+// Listen for SW messages (postMessage)
+navigator.serviceWorker.addEventListener('message', event => {
+    console.log('navigator.serviceWorker message:', event);
+    if (event.data?.type === 'notification-click') {
+        console.log('Notification click via postMessage:', event.data.data);
+        handleNotificationClick(event.data.data);
+    }
+});
+
+// Fallback: check URL for notificationData on load
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('notificationData');
+    if (raw) {
+        try {
+            const data = JSON.parse(decodeURIComponent(raw));
+            console.log('Notification click via URL:', data);
+            handleNotificationClick(data);
+        } catch (e) {
+            console.error('Failed to parse notificationData:', e);
         }
-    });
+    }
+});
+
+function handleNotificationClick(data) {
+    console.log('Handling notification-click:', data);
+    // <-- put your routing or command logic here -->
 }
