@@ -92,3 +92,11 @@ function handleNotificationClick(data) {
     console.log('Handling notification-click:', data);
     // <-- put your routing or command logic here -->
 }
+
+
+
+navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'sw-log') {
+        console.log('[SW ➡️ Page]', ...event.data.args);
+    }
+});
