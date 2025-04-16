@@ -24,7 +24,7 @@ function waitForServiceWorker(timeout = 5000) {
 
 function registerPushDevice(jwt) {
     console.log('[registerPushDevice] JWT:', jwt);
-    if (!navigator.serviceWorker || !firebase?.messaging) {
+    if (!navigator.serviceWorker || !firebase.messaging) {
         console.warn('[registerPushDevice] unsupported environment');
         return Promise.resolve(null);
     }
@@ -38,15 +38,15 @@ function registerPushDevice(jwt) {
     }
 
     return requestNotificationPermission().then(permission => {
-        console.log('[registerPushDevice] perm:', permission);
+        console.log('[registerPushDevice] permission:', permission);
         if (permission !== 'granted') return null;
 
-        return waitForServiceWorker().then(reg => {
-            console.log('[registerPushDevice] SW ready:', reg);
+        return waitForServiceWorker().then(registration => {
+            console.log('[registerPushDevice] SW ready:', registration);
             const messaging = firebase.messaging();
             return messaging.getToken({
                 vapidKey: VAPID_KEY,
-                serviceWorkerRegistration: reg
+                serviceWorkerRegistration: registration
             });
         }).then(token => {
             if (!token) {
@@ -61,7 +61,7 @@ function registerPushDevice(jwt) {
             console.log('[registerPushDevice] success:', result);
             return result;
         }).catch(err => {
-            console.error('[registerPushDevice] error', err);
+            console.error('[registerPushDevice] error:', err);
             return null;
         });
     });
@@ -69,7 +69,7 @@ function registerPushDevice(jwt) {
 
 function handleNotificationData(data) {
     console.log('Notification payload received:', data);
-    // <-- your app logic here (e.g. router.push or UI update)
+    // your app logic here
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -79,9 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-workers.js', { scope:'/' })
+        navigator.serviceWorker.register('/service-workers.js', { scope: '/' })
             .then(reg => console.log('[SW] registered', reg))
-            .catch(err => console.error('[SW] registration failed', err));
+            .catch(err => console.error('[SW] reg failed', err));
 
         navigator.serviceWorker.addEventListener('message', event => {
             if (event.data?.type === 'notification-click') {
@@ -95,7 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('[SW] not supported');
     }
 
-    // parse URL param on initial load
     const params = new URLSearchParams(window.location.search);
     const raw = params.get('notification');
     if (raw) {
