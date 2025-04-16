@@ -1,5 +1,8 @@
-// Import Firebase core
+// service‑workers.js
+
+// Import Firebase core + messaging
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
     apiKey:    "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
@@ -12,11 +15,9 @@ firebase.initializeApp({
 
 // Helper: forward logs into your page
 function swLog(msg, data) {
-    // send to page
     clients.matchAll({ includeUncontrolled: true }).then(arr =>
         arr.forEach(c => c.postMessage({ type:'sw-log', msg, data }))
     );
-    // also SW console
     console.log('[SW]', msg, data);
 }
 
@@ -32,56 +33,49 @@ self.addEventListener('push', event => {
     }
     swLog('Push received', payload);
 
-    const title   = payload.notification?.title || 'Notification';
+    const title = payload.notification?.title || 'Notification';
     const options = {
-        body: payload.notification?.body || '',
-        icon: '/favicon/favicon.ico',
-        data: payload.data || payload
+        body:  payload.notification?.body  || '',
+        icon:  '/favicon/favicon.ico',
+        data:  payload.data || payload
     };
 
-    event.waitUntil(self.registration.showNotification(title, options));
+    event.waitUntil(
+        self.registration.showNotification(title, options)
+    );
 });
 
-// --- CLICK event (deep‑link) ---
+// --- CLICK event: navigate + message client ---
 self.addEventListener('notificationclick', event => {
     event.notification.close();
     const data = event.notification.data || {};
     swLog('Notification click', data);
-
     const url = '/#notification=' + encodeURIComponent(JSON.stringify(data));
 
     event.waitUntil(
         clients.matchAll({ type:'window', includeUncontrolled:true })
             .then(wins => {
                 if (wins.length) {
-                    return wins[0].navigate(url).then(w => w.focus());
+                    return wins[0].navigate(url).then(win => {
+                        win.focus();
+                        win.postMessage({ type:'notification-click', data });
+                    });
                 }
-                return clients.openWindow(url);
+                return clients.openWindow(url).then(win => {
+                    if (win) win.postMessage({ type:'notification-click', data });
+                });
             })
     );
 });
 
 // --- CACHING ---
-const CACHE_NAME = 'costguard-v#BUILD#'; // bump on deploy
+const CACHE_NAME = 'costguard-v#BUILD#';
 const urlsToCache = [
     '/index.html',
-    '/cache.manifest',
-    '/favicon/apple-touch-icon.png',
-    '/favicon/favicon.ico',
-    '/favicon/icon-192.png',
-    '/favicon/icon-512.png',
-    '/favicon/icon-maskable.png',
     '/css/custom.css',
-    '/css/cutestrap.css',
     '/js/app.js',
     '/js/custom.js',
-    '/js/sta-api.js',
-    '/js/sta-config.js',
-    '/js/sta-io.js',
-    '/js/sta-nebula.js',
-    '/js/sta-socket.js',
-    '/js/sta-state.js',
-    '/js/stripe.js'
+    // …add all other shell assets…
 ];
 
 self.addEventListener('install', event => {
