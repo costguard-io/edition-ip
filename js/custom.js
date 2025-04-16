@@ -3,7 +3,6 @@
 
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
-// Use EXACT values from your Firebase Console "Project settings > General > Your apps"
 const firebaseConfig = {
     apiKey: "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
     authDomain: "costguard.firebaseapp.com",
