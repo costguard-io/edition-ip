@@ -1,6 +1,3 @@
-
-
-
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
 // Use EXACT values from your Firebase Console "Project settings > General > Your apps"
@@ -57,7 +54,7 @@ const registerPushDevice = function(jwt) {
             window.matchMedia('(display-mode: standalone)').matches ||
             window.navigator.standalone;
 
-// Allow regular desktop browsers in non-production environments
+        // Allow regular desktop browsers in non-production environments
         const allowNonStandalone = stateTagApp.env !== 'production';
 
         if (!isStandalone && !allowNonStandalone) {
@@ -108,7 +105,7 @@ const registerPushDevice = function(jwt) {
             resolve(null);
         });
     });
-};
+}
 
 // Initialize Firebase if it hasn't been initialized yet
 document.addEventListener("DOMContentLoaded", function() {
@@ -118,10 +115,9 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-
 // Register the service worker
 if ('serviceWorker' in navigator) {
-    // Make sure the file name here matches the second file below
+    // Make sure the file name here matches your service worker file name
     navigator.serviceWorker.register('/service-workers.js', { scope: '/' })
         .then(function(reg) {
             console.log('[Service Worker] Registered successfully:', reg);
@@ -133,3 +129,12 @@ if ('serviceWorker' in navigator) {
     console.warn('[Service Worker] Not supported in this browser.');
 }
 
+// Listen for messages from the service worker (e.g. for notification clicks)
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'notification-click') {
+            console.log('Received notification click data:', event.data.data);
+            // Process the data here (e.g. navigate or execute a command)
+        }
+    });
+}
