@@ -16,7 +16,7 @@ stateTagApp = {
     api: {
         production: "https://api.CostGuard.io",
         ngrok: "https://esb.costguard.io",
-        development: "https://api.CostGuard.io"
+        development: "http://api.CostGuard.test"
     },
 
     socket: {
@@ -28,8 +28,7 @@ stateTagApp = {
     nebula: {
         production: "https://json-data.io:8080",
         ngrok: "https://json-data.io:8080",
-        development: "https://json-data.io:8080",
-        developmentbk: "http://json-data.io:8181"
+        development: "http://json-data.io:8181"
     },
 
     palette: {
