@@ -1,6 +1,5 @@
 // service‑workers.js
 
-// Import Firebase core + messaging
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
 
@@ -13,7 +12,6 @@ firebase.initializeApp({
     appId:     "1:873736687737:web:be444e90d27f23364544a8"
 });
 
-// Helper: forward logs into your page
 function swLog(msg, data) {
     clients.matchAll({ includeUncontrolled: true }).then(arr =>
         arr.forEach(c => c.postMessage({ type:'sw-log', msg, data }))
@@ -21,23 +19,19 @@ function swLog(msg, data) {
     console.log('[SW]', msg, data);
 }
 
-// --- PUSH event ---
 self.addEventListener('push', event => {
     let payload = {};
     if (event.data) {
-        try {
-            payload = event.data.json();
-        } catch (e) {
-            swLog('push: invalid JSON', event.data.text());
-        }
+        try { payload = event.data.json(); }
+        catch (e) { swLog('push: invalid JSON', event.data.text()); }
     }
     swLog('Push received', payload);
 
     const title = payload.notification?.title || 'Notification';
     const options = {
-        body:  payload.notification?.body  || '',
-        icon:  '/favicon/favicon.ico',
-        data:  payload.data || payload
+        body: payload.notification?.body || '',
+        icon: '/favicon/favicon.ico',
+        data: payload.data || payload
     };
 
     event.waitUntil(
@@ -45,37 +39,39 @@ self.addEventListener('push', event => {
     );
 });
 
-// --- CLICK event: navigate + message client ---
 self.addEventListener('notificationclick', event => {
     event.notification.close();
     const data = event.notification.data || {};
     swLog('Notification click', data);
-    const url = '/#notification=' + encodeURIComponent(JSON.stringify(data));
+
+    const url = '/?notification=' + encodeURIComponent(JSON.stringify(data));
 
     event.waitUntil(
-        clients.matchAll({ type:'window', includeUncontrolled:true })
-            .then(wins => {
-                if (wins.length) {
-                    return wins[0].navigate(url).then(win => {
-                        win.focus();
-                        win.postMessage({ type:'notification-click', data });
-                    });
-                }
-                return clients.openWindow(url).then(win => {
-                    if (win) win.postMessage({ type:'notification-click', data });
+        clients.matchAll({ type:'window', includeUncontrolled:true }).then(windowClients => {
+            // Try to reuse an existing window
+            for (const client of windowClients) {
+                return client.navigate(url).then(navigatedClient => {
+                    navigatedClient.focus();
+                    navigatedClient.postMessage({ type:'notification-click', data });
                 });
-            })
+            }
+            // Otherwise open a new one
+            return clients.openWindow(url).then(newClient => {
+                if (newClient) {
+                    newClient.postMessage({ type:'notification-click', data });
+                }
+            });
+        })
     );
 });
 
-// --- CACHING ---
-const CACHE_NAME = 'costguard-v#BUILD#';
+const CACHE_NAME = 'costguard-v2'; // <- bump this each deploy
 const urlsToCache = [
     '/index.html',
     '/css/custom.css',
     '/js/app.js',
     '/js/custom.js',
-    // …add all other shell assets…
+    // add other shell assets here
 ];
 
 self.addEventListener('install', event => {

@@ -25,32 +25,32 @@ function waitForServiceWorker(timeout = 5000) {
 function registerPushDevice(jwt) {
     console.log('[registerPushDevice] JWT:', jwt);
     if (!navigator.serviceWorker || !firebase?.messaging) {
-        console.warn('[registerPushDevice] SW or messaging unsupported.');
+        console.warn('[registerPushDevice] unsupported environment');
         return Promise.resolve(null);
     }
 
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches
         || window.navigator.standalone;
-    const allowNonStandalone = stateTagApp.env !== 'production';
-    if (!isStandalone && !allowNonStandalone) {
-        console.warn('[registerPushDevice] Not in PWA mode.');
+    const allowDev = stateTagApp.env !== 'production';
+    if (!isStandalone && !allowDev) {
+        console.warn('[registerPushDevice] not PWA mode');
         return Promise.resolve(null);
     }
 
     return requestNotificationPermission().then(permission => {
-        console.log('[registerPushDevice] Permission:', permission);
+        console.log('[registerPushDevice] perm:', permission);
         if (permission !== 'granted') return null;
 
-        return waitForServiceWorker().then(registration => {
-            console.log('[registerPushDevice] SW ready:', registration);
+        return waitForServiceWorker().then(reg => {
+            console.log('[registerPushDevice] SW ready:', reg);
             const messaging = firebase.messaging();
             return messaging.getToken({
                 vapidKey: VAPID_KEY,
-                serviceWorkerRegistration: registration
+                serviceWorkerRegistration: reg
             });
         }).then(token => {
             if (!token) {
-                console.warn('[registerPushDevice] No FCM token');
+                console.warn('[registerPushDevice] no token');
                 return null;
             }
             const agent = navigator.userAgent;
@@ -58,37 +58,52 @@ function registerPushDevice(jwt) {
                 : /iphone|ipad|ipod/i.test(agent) ? 'ios'
                     : 'web';
             const result = { token, platform, agent };
-            console.log('[registerPushDevice] Success:', result);
+            console.log('[registerPushDevice] success:', result);
             return result;
         }).catch(err => {
-            console.error('[registerPushDevice] Error:', err);
+            console.error('[registerPushDevice] error', err);
             return null;
         });
     });
 }
 
-// Init Firebase + SW registration
-document.addEventListener("DOMContentLoaded", () => {
+function handleNotificationData(data) {
+    console.log('Notification payload received:', data);
+    // <-- your app logic here (e.g. router.push or UI update)
+}
+
+document.addEventListener('DOMContentLoaded', () => {
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
-        console.log("Firebase initialized");
+        console.log('Firebase initialized');
     }
 
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-workers.js', { scope: '/' })
-            .then(reg => console.log('[Service Worker] Registered:', reg))
-            .catch(err => console.error('[Service Worker] Reg failed:', err));
+        navigator.serviceWorker.register('/service-workers.js', { scope:'/' })
+            .then(reg => console.log('[SW] registered', reg))
+            .catch(err => console.error('[SW] registration failed', err));
 
         navigator.serviceWorker.addEventListener('message', event => {
             if (event.data?.type === 'notification-click') {
-                console.log('Notification click data:', event.data.data);
-                // …handle click payload in your app…
+                handleNotificationData(event.data.data);
             }
             if (event.data?.type === 'sw-log') {
                 console.debug('SW log:', event.data.msg, event.data.data);
             }
         });
     } else {
-        console.warn('[Service Worker] Not supported');
+        console.warn('[SW] not supported');
+    }
+
+    // parse URL param on initial load
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('notification');
+    if (raw) {
+        try {
+            const data = JSON.parse(decodeURIComponent(raw));
+            handleNotificationData(data);
+        } catch (e) {
+            console.error('Invalid notification param', e);
+        }
     }
 });
