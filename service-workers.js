@@ -1,48 +1,78 @@
-// Import Firebase libraries for Messaging
+// Import Firebase core
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
 
-// Initialize Firebase in the service worker context
-// -1
 firebase.initializeApp({
-    apiKey: "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
-    authDomain: "costguard.firebaseapp.com",
+    apiKey:    "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
+    authDomain:"costguard.firebaseapp.com",
     projectId: "costguard",
-    storageBucket: "costguard.firebasestorage.app",
-    messagingSenderId: "873736687737",
-    appId: "1:873736687737:web:be444e90d27f23364544a8"
-
+    storageBucket:"costguard.firebasestorage.app",
+    messagingSenderId:"873736687737",
+    appId:     "1:873736687737:web:be444e90d27f23364544a8"
 });
 
-// Initialize Firebase Messaging
-const messaging = firebase.messaging();
+// Helper: forward logs into your page
+function swLog(msg, data) {
+    // send to page
+    clients.matchAll({ includeUncontrolled: true }).then(arr =>
+        arr.forEach(c => c.postMessage({ type:'sw-log', msg, data }))
+    );
+    // also SW console
+    console.log('[SW]', msg, data);
+}
 
-// Handle background messages
-messaging.onBackgroundMessage((payload) => {
-    //console.log('[Service Worker] Received background message:', payload);
-    const notificationTitle = payload.notification.title;
-    const notificationOptions = {
-        body: payload.notification.body,
-        icon: '/favicon/favicon.ico'
+// --- PUSH event ---
+self.addEventListener('push', event => {
+    let payload = {};
+    if (event.data) {
+        try {
+            payload = event.data.json();
+        } catch (e) {
+            swLog('push: invalid JSON', event.data.text());
+        }
+    }
+    swLog('Push received', payload);
+
+    const title   = payload.notification?.title || 'Notification';
+    const options = {
+        body: payload.notification?.body || '',
+        icon: '/favicon/favicon.ico',
+        data: payload.data || payload
     };
-    self.registration.showNotification(notificationTitle, notificationOptions);
+
+    event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// --- Caching Logic ---
-const CACHE_NAME = 'costguard-v#BUILD#';
+// --- CLICK event (deep‑link) ---
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+    const data = event.notification.data || {};
+    swLog('Notification click', data);
+
+    const url = '/#notification=' + encodeURIComponent(JSON.stringify(data));
+
+    event.waitUntil(
+        clients.matchAll({ type:'window', includeUncontrolled:true })
+            .then(wins => {
+                if (wins.length) {
+                    return wins[0].navigate(url).then(w => w.focus());
+                }
+                return clients.openWindow(url);
+            })
+    );
+});
+
+// --- CACHING ---
+const CACHE_NAME = 'costguard-v#BUILD#'; // bump on deploy
 const urlsToCache = [
     '/index.html',
     '/cache.manifest',
-
     '/favicon/apple-touch-icon.png',
     '/favicon/favicon.ico',
     '/favicon/icon-192.png',
     '/favicon/icon-512.png',
     '/favicon/icon-maskable.png',
-
     '/css/custom.css',
     '/css/cutestrap.css',
-
     '/js/app.js',
     '/js/custom.js',
     '/js/sta-api.js',
@@ -54,46 +84,28 @@ const urlsToCache = [
     '/js/stripe.js'
 ];
 
-// Install event with detailed logging
 self.addEventListener('install', event => {
-    //console.log('[ServiceWorker] Install event starting.');
+    swLog('install');
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => {
-                //console.log('[ServiceWorker] Caching URLs:', urlsToCache);
-                return cache.addAll(urlsToCache);
-            })
+            .then(c => c.addAll(urlsToCache))
             .then(() => self.skipWaiting())
     );
 });
 
-// Activate event with cache cleanup logging
 self.addEventListener('activate', event => {
-    //console.log('[ServiceWorker] Activating new service worker...');
+    swLog('activate');
     event.waitUntil(
-        caches.keys().then(cacheNames => Promise.all(
-            cacheNames.filter(name => name !== CACHE_NAME).map(oldCache => {
-                //console.log('[ServiceWorker] Deleting old cache:', oldCache);
-                return caches.delete(oldCache);
-            })
-        )).then(() => {
-            //console.log('[ServiceWorker] Clients claimed.');
-            return self.clients.claim();
-        })
+        caches.keys().then(keys =>
+            Promise.all(
+                keys.filter(k => k !== CACHE_NAME).map(old => caches.delete(old))
+            )
+        ).then(() => self.clients.claim())
     );
 });
 
-// Fetch event with cache hit/miss logging
 self.addEventListener('fetch', event => {
-    console.log('[ServiceWorker] Fetch request for:', event.request.url);
     event.respondWith(
-        caches.match(event.request).then(response => {
-            if (response) {
-                console.log('[ServiceWorker] Cache hit:', event.request.url);
-                return response;
-            }
-            console.log('[ServiceWorker] Cache miss, fetching:', event.request.url);
-            return fetch(event.request);
-        })
+        caches.match(event.request).then(r => r || fetch(event.request))
     );
 });
