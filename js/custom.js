@@ -1,67 +1,140 @@
-// /js/custom.js
+const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
-// 1) Your config
-var VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
-var firebaseConfig = {
-    apiKey:    "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
-    authDomain:"costguard.firebaseapp.com",
+// Use EXACT values from your Firebase Console "Project settings > General > Your apps"
+const firebaseConfig = {
+    apiKey: "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
+    authDomain: "costguard.firebaseapp.com",
     projectId: "costguard",
-    storageBucket:"costguard.firebasestorage.app",
-    messagingSenderId:"873736687737",
-    appId:     "1:873736687737:web:be444e90d27f23364544a8"
+    storageBucket: "costguard.firebasestorage.app",
+    messagingSenderId: "873736687737",
+    appId: "1:873736687737:web:be444e90d27f23364544a8"
 };
 
-// 2) Initialize Firebase on load
-window.onload = function() {
-    firebase.initializeApp(firebaseConfig);
-    alert('🔔 Firebase initialized');
+function requestNotificationPermission() {
+    return new Promise((resolve, reject) => {
+        Notification.requestPermission(result => {
+            resolve(result);
+        });
+    });
+}
 
-    // 3) Register your exact service‑workers.js
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service‑workers.js', { scope: '/' })
-            .then(function(registration) {
-                alert('🔔 SW registered');
-                console.log('SW registration:', registration);
+function waitForServiceWorker(timeout = 5000) {
+    return new Promise((resolve, reject) => {
+        navigator.serviceWorker.ready.then(resolve).catch(reject);
+        setTimeout(() => {
+            reject(new Error('Service worker ready timeout'));
+        }, timeout);
+    });
+}
 
-                // 4) Hook messaging to that SW
-                var messaging = firebase.messaging();
-                messaging.useServiceWorker(registration);
+const destroyMode = function() {
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (let reg of registrations) reg.unregister();
+        caches.keys().then(function(names) {
+            for (let name of names) caches.delete(name);
+            location.reload(true);
+        });
+    });
+};
 
-                // 5) Ask for Notification permission
-                return Notification.requestPermission().then(function(permission) {
-                    alert('🔔 Notification permission: ' + permission);
-                    if (permission !== 'granted') {
-                        throw 'Permission not granted';
-                    }
-                    // 6) Get FCM token
-                    return messaging.getToken({ vapidKey: VAPID_KEY });
-                });
-            })
-            .then(function(token) {
-                alert('🔔 FCM token: ' + token);
-                console.log('FCM token:', token);
-                // TODO: send this token to your backend
-            })
-            .catch(function(err) {
-                alert('❌ Push setup failed: ' + err);
-                console.error('Push setup failed:', err);
-            });
-    } else {
-        alert('⚠️ Service Workers not supported');
-    }
-
-    // 7) Deep‑link fallback: parse #notification=… on load
-    var hash = window.location.hash;
-    if (hash.indexOf('notification=') !== -1) {
-        var raw = decodeURIComponent(hash.split('notification=')[1]);
-        try {
-            var data = JSON.parse(raw);
-            alert('🔔 Deep‑link data: ' + JSON.stringify(data));
-            console.log('Deep‑link payload:', data);
-            // handleNotificationClick(data);
-        } catch (e) {
-            alert('❌ Invalid notification payload');
-            console.error('Invalid payload:', e);
+const registerPushDevice = function(jwt) {
+    console.log('[registerPushDevice] Starting with JWT:', jwt);
+    return new Promise((resolve) => {
+        if (!('serviceWorker' in navigator)) {
+            console.warn('[registerPushDevice] Service workers not supported.');
+            return resolve(null);
         }
+
+        if (!firebase || !firebase.messaging) {
+            console.warn('[registerPushDevice] Firebase messaging not available.');
+            return resolve(null);
+        }
+
+        const isStandalone =
+            window.matchMedia('(display-mode: standalone)').matches ||
+            window.navigator.standalone;
+
+        // Allow regular desktop browsers in non-production environments
+        const allowNonStandalone = stateTagApp.env !== 'production';
+
+        if (!isStandalone && !allowNonStandalone) {
+            console.warn('[registerPushDevice] Not running in standalone/PWA mode.');
+            return resolve(null);
+        }
+
+        requestNotificationPermission().then(function(permission) {
+            // 'granted', 'denied', or 'default'
+            console.log('[registerPushDevice] Notification permission:', permission);
+
+            if (permission !== 'granted') {
+                console.warn('[registerPushDevice] Permission not granted.');
+                return resolve(null);
+            }
+
+            waitForServiceWorker().then(function(registration) {
+                console.log('[registerPushDevice] Service worker is ready:', registration);
+
+                const messaging = firebase.messaging();
+                messaging.getToken({
+                    vapidKey: VAPID_KEY,
+                    serviceWorkerRegistration: registration
+                }).then(function(token) {
+                    console.log('[registerPushDevice] FCM Token:', token);
+                    if (!token) {
+                        console.warn('[registerPushDevice] No token returned.');
+                        return resolve(null);
+                    }
+                    const agent = navigator.userAgent;
+                    let platform = 'web';
+                    if (/android/i.test(agent)) platform = 'android';
+                    else if (/iphone|ipad|ipod/i.test(agent)) platform = 'ios';
+
+                    const result = { token, platform, agent };
+                    console.log('[registerPushDevice] Success:', result);
+                    resolve(result);
+                }).catch(function(err) {
+                    console.error('[registerPushDevice] getToken failed:', err);
+                    resolve(null);
+                });
+            }).catch(function(err) {
+                console.error('[registerPushDevice] Service worker not ready:', err);
+                resolve(null);
+            });
+        }).catch(function(err) {
+            console.error('[registerPushDevice] Notification permission request failed:', err);
+            resolve(null);
+        });
+    });
+}
+
+// Initialize Firebase if it hasn't been initialized yet
+document.addEventListener("DOMContentLoaded", function() {
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+        console.log("Firebase initialized");
     }
-};
+});
+
+// Register the service worker
+if ('serviceWorker' in navigator) {
+    // Make sure the file name here matches your service worker file name
+    navigator.serviceWorker.register('/service-workers.js', { scope: '/' })
+        .then(function(reg) {
+            console.log('[Service Worker] Registered successfully:', reg);
+        })
+        .catch(function(err) {
+            console.error('[Service Worker] Registration failed:', err);
+        });
+} else {
+    console.warn('[Service Worker] Not supported in this browser.');
+}
+
+// Listen for messages from the service worker (e.g. for notification clicks)
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'notification-click') {
+            console.log('Received notification click data:', event.data.data);
+            // Process the data here (e.g. navigate or execute a command)
+        }
+    });
+}
