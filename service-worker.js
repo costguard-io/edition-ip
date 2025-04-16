@@ -10,7 +10,7 @@ firebase.initializeApp({
     appId: "1:873736687737:web:be444e90d27f23364544a8"
 });
 
-const BUILD = '#BUILD#'; // this gets replaced during build
+const BUILD = '1.3.22'; // this gets replaced during build
 
 // Optional: postMessage helper if you want to forward logs to the client
 function swLog(msg, data) {
