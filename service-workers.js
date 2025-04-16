@@ -16,7 +16,7 @@ function swLog(msg, data) {
     console.log('[SW]', msg, data);
 }
 
-swLog('⚡️ SW loaded 1.3.17', null);
+swLog('⚡️ SW loaded 1.3.18', null);
 
 self.addEventListener('push', event => {
     let payload = {};
@@ -64,7 +64,7 @@ self.addEventListener('notificationclick', event => {
     );
 });
 
-const CACHE_NAME = 'costguard-v1.3.17';
+const CACHE_NAME = 'costguard-v1.3.18';
 const urlsToCache = [
     '/index.html',
     '/cache.manifest',
