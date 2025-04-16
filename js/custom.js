@@ -1,11 +1,8 @@
-// custom.js
+// /js/custom.js
 
-// Make sure your HTML loads these *before* custom.js:
-// <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-// <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
-
-const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
-const firebaseConfig = {
+// 1) Your config
+var VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
+var firebaseConfig = {
     apiKey:    "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
     authDomain:"costguard.firebaseapp.com",
     projectId: "costguard",
@@ -14,59 +11,57 @@ const firebaseConfig = {
     appId:     "1:873736687737:web:be444e90d27f23364544a8"
 };
 
-// Initialize Firebase & register Service Worker + Push
-document.addEventListener('DOMContentLoaded', () => {
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-        console.log('[App] Firebase initialized');
-    }
+// 2) Initialize Firebase on load
+window.onload = function() {
+    firebase.initializeApp(firebaseConfig);
+    alert('🔔 Firebase initialized');
 
+    // 3) Register your exact service‑workers.js
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-workers.js', { scope: '/' })
-            .then(reg => {
-                console.log('[App] SW registered:', reg);
-                return reg;
+        navigator.serviceWorker.register('/service‑workers.js', { scope: '/' })
+            .then(function(registration) {
+                alert('🔔 SW registered');
+                console.log('SW registration:', registration);
+
+                // 4) Hook messaging to that SW
+                var messaging = firebase.messaging();
+                messaging.useServiceWorker(registration);
+
+                // 5) Ask for Notification permission
+                return Notification.requestPermission().then(function(permission) {
+                    alert('🔔 Notification permission: ' + permission);
+                    if (permission !== 'granted') {
+                        throw 'Permission not granted';
+                    }
+                    // 6) Get FCM token
+                    return messaging.getToken({ vapidKey: VAPID_KEY });
+                });
             })
-            .then(reg => registerPushDevice(reg))
-            .catch(err => console.error('[App] SW reg failed:', err));
+            .then(function(token) {
+                alert('🔔 FCM token: ' + token);
+                console.log('FCM token:', token);
+                // TODO: send this token to your backend
+            })
+            .catch(function(err) {
+                alert('❌ Push setup failed: ' + err);
+                console.error('Push setup failed:', err);
+            });
     } else {
-        console.warn('[App] Service workers not supported.');
+        alert('⚠️ Service Workers not supported');
     }
 
-    // Deep‑link fallback: parse #notification=... on load
-    const m = window.location.hash.match(/notification=(.*)$/);
-    if (m) {
+    // 7) Deep‑link fallback: parse #notification=… on load
+    var hash = window.location.hash;
+    if (hash.indexOf('notification=') !== -1) {
+        var raw = decodeURIComponent(hash.split('notification=')[1]);
         try {
-            const payload = JSON.parse(decodeURIComponent(m[1]));
-            console.log('[App] Notification via deep‑link:', payload);
-            handleNotificationClick(payload);
+            var data = JSON.parse(raw);
+            alert('🔔 Deep‑link data: ' + JSON.stringify(data));
+            console.log('Deep‑link payload:', data);
+            // handleNotificationClick(data);
         } catch (e) {
-            console.error('[App] Failed to parse notificationData:', e);
+            alert('❌ Invalid notification payload');
+            console.error('Invalid payload:', e);
         }
     }
-});
-
-// Request permission & get FCM token
-function registerPushDevice(registration) {
-    return Notification.requestPermission()
-        .then(permission => {
-            console.log('[App] Notification permission:', permission);
-            if (permission !== 'granted') throw new Error('Permission denied');
-            return firebase.messaging().getToken({
-                vapidKey: VAPID_KEY,
-                serviceWorkerRegistration: registration
-            });
-        })
-        .then(token => {
-            console.log('[App] FCM token:', token);
-            // send token + platform to your backend here if needed
-            return token;
-        })
-        .catch(err => console.error('[App] Push registration failed:', err));
-}
-
-// Your handler for when a notification is clicked
-function handleNotificationClick(data) {
-    console.log('[App] handleNotificationClick:', data);
-    // e.g. router.push(`/invoices/${data.invoiceId}`)
-}
+};
