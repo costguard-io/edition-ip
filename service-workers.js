@@ -59,7 +59,7 @@ self.addEventListener('notificationclick', event => {
     );
 });
 
-const CACHE_NAME = 'costguard-v#BUILD#';
+const CACHE_NAME = 'costguard-v1.3.15';
 const urlsToCache = [
     '/index.html',
     '/cache.manifest',
