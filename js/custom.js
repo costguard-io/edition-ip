@@ -11,100 +11,93 @@ const firebaseConfig = {
     appId:             "1:873736687737:web:be444e90d27f23364544a8"
 };
 
-function requestNotificationPermission() {
-    return Notification.requestPermission();
+// Initialize Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+    console.log('[custom] Firebase initialized');
 }
 
-function waitForServiceWorker() {
-    return navigator.serviceWorker.ready;
+const messaging = firebase.messaging();
+
+// Handle incoming messages from SW
+navigator.serviceWorker?.addEventListener('message', event => {
+    if (event.data?.type === 'notification-click') {
+        handleNotificationData(event.data.data);
+    }
+    if (event.data?.type === 'sw-log') {
+        console.debug('SW log:', event.data.msg, event.data.data);
+    }
+});
+
+// Parse notification from URL on load
+(function handleNotificationFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const raw    = params.get('notification');
+    if (!raw) return;
+    try {
+        const data = JSON.parse(decodeURIComponent(raw));
+        handleNotificationData(data);
+    } catch (e) {
+        console.error('[custom] Invalid notification param', e);
+    }
+})();
+
+// Register & ready the service worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-workers.js', { scope: '/' })
+        .then(reg => console.log('[custom] SW registered:', reg))
+        .catch(err => console.error('[custom] SW registration failed:', err));
+} else {
+    console.warn('[custom] Service Worker unsupported');
 }
 
+// Push‑device registration
 function registerPushDevice(jwt) {
     console.log('[registerPushDevice] JWT:', jwt);
-    if (!navigator.serviceWorker || !firebase.messaging) {
-        console.warn('[registerPushDevice] unsupported');
-        return Promise.resolve(null);
-    }
 
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches
         || window.navigator.standalone;
     const allowDev = stateTagApp.env !== 'production';
     if (!isStandalone && !allowDev) {
-        console.warn('[registerPushDevice] not PWA');
+        console.warn('[registerPushDevice] Not running in PWA mode');
         return Promise.resolve(null);
     }
 
-    return requestNotificationPermission().then(permission => {
-        console.log('[registerPushDevice] permission:', permission);
-        if (permission !== 'granted') return null;
-
-        return waitForServiceWorker().then(reg => {
-            console.log('[registerPushDevice] SW ready');
-            return firebase.messaging().getToken({
+    return Notification.requestPermission()
+        .then(permission => {
+            console.log('[registerPushDevice] permission:', permission);
+            if (permission !== 'granted') return null;
+            return navigator.serviceWorker.ready; // <-- NEVER destructured
+        })
+        .then(registration => {
+            if (!registration) return null;
+            return messaging.getToken({
                 vapidKey: VAPID_KEY,
-                serviceWorkerRegistration: reg
+                serviceWorkerRegistration: registration
             });
-        }).then(token => {
+        })
+        .then(token => {
             if (!token) {
-                console.warn('[registerPushDevice] no token');
+                console.warn('[registerPushDevice] no FCM token returned');
                 return null;
             }
-            const agent    = navigator.userAgent;
-            const platform = /android/i.test(agent) ? 'android'
-                : /iphone|ipad|ipod/i.test(agent) ? 'ios'
+            const ua = navigator.userAgent;
+            const platform = /android/i.test(ua) ? 'android'
+                : /iphone|ipad|ipod/i.test(ua) ? 'ios'
                     : 'web';
-            const result   = { token, platform, agent };
+            const result = { token, platform, agent: ua };
             console.log('[registerPushDevice] success:', result);
             return result;
-        }).catch(err => {
+        })
+        .catch(err => {
             console.error('[registerPushDevice] error:', err);
             return null;
         });
-    });
 }
 
-function handleNotificationData(data) {
-    console.log('Notification payload:', data);
-    // your app logic here
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-        console.log('Firebase initialized');
-    }
-
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-workers.js', { scope: '/' })
-            .then(reg => console.log('[SW] registered'))
-            .catch(err => console.error('[SW] reg failed', err));
-
-        // listen for SW messages
-        navigator.serviceWorker.addEventListener('message', event => {
-            if (event.data?.type === 'notification-click') {
-                handleNotificationData(event.data.data);
-            }
-            if (event.data?.type === 'sw-log') {
-                console.debug('SW log:', event.data.msg, event.data.data);
-            }
-        });
-
-        // fallback onmessage
-        navigator.serviceWorker.onmessage = event => {
-            if (event.data?.type === 'notification-click') {
-                handleNotificationData(event.data.data);
-            }
-        };
-    }
-
-    // handle URL param
-    const params = new URLSearchParams(window.location.search);
-    const raw    = params.get('notification');
-    if (raw) {
-        try {
-            handleNotificationData(JSON.parse(decodeURIComponent(raw)));
-        } catch (e) {
-            console.error('Invalid notification param', e);
-        }
-    }
-});
+// Expose to your app
+window.registerPushDevice   = registerPushDevice;
+window.handleNotificationData = function(data) {
+    console.log('[custom] Notification payload received:', data);
+    // ← your app logic here (router push, UI update, etc.)
+};
