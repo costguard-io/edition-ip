@@ -1,6 +1,5 @@
 // service‑workers.js
 
-// Import Firebase core + messaging
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
 
@@ -13,10 +12,9 @@ firebase.initializeApp({
     appId:     "1:873736687737:web:be444e90d27f23364544a8"
 });
 
-// Helper: forward logs into your page
 function swLog(msg, data) {
     clients.matchAll({ includeUncontrolled: true }).then(arr =>
-        arr.forEach(c => c.postMessage({ type:'sw-log', msg, data }))
+        arr.forEach(c => c.postMessage({ type: 'sw-log', msg, data }))
     );
     console.log('[SW]', msg, data);
 }
@@ -24,19 +22,16 @@ function swLog(msg, data) {
 self.addEventListener('push', event => {
     let payload = {};
     if (event.data) {
-        try {
-            payload = event.data.json();
-        } catch (e) {
-            swLog('push: invalid JSON', event.data.text());
-        }
+        try { payload = event.data.json(); }
+        catch (e) { swLog('push: invalid JSON', event.data.text()); }
     }
     swLog('Push received', payload);
 
-    const title = payload.notification?.title || 'Notification';
+    const title   = payload.notification?.title   || 'Notification';
     const options = {
-        body: payload.notification?.body || '',
-        icon: '/favicon/favicon.ico',
-        data: payload.data || payload
+        body:        payload.notification?.body    || '',
+        icon:        '/favicon/favicon.ico',
+        data:        payload.data || payload
     };
 
     event.waitUntil(
@@ -52,15 +47,15 @@ self.addEventListener('notificationclick', event => {
     const url = '/?notification=' + encodeURIComponent(JSON.stringify(data));
 
     event.waitUntil(
-        clients.matchAll({ type:'window', includeUncontrolled:true }).then(clientsArr => {
-            if (clientsArr.length) {
-                return clientsArr[0].navigate(url).then(win => {
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(winList => {
+            if (winList.length) {
+                return winList[0].navigate(url).then(win => {
                     win.focus();
-                    win.postMessage({ type:'notification-click', data });
+                    win.postMessage({ type: 'notification-click', data });
                 });
             }
             return clients.openWindow(url).then(newWin => {
-                if (newWin) newWin.postMessage({ type:'notification-click', data });
+                if (newWin) newWin.postMessage({ type: 'notification-click', data });
             });
         })
     );
@@ -102,7 +97,7 @@ self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(keys =>
             Promise.all(
-                keys.filter(k => k !== CACHE_NAME).map(old => caches.delete(old))
+                keys.filter(key => key !== CACHE_NAME).map(old => caches.delete(old))
             )
         ).then(() => self.clients.claim())
     );
@@ -110,6 +105,6 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
     event.respondWith(
-        caches.match(event.request).then(response => response || fetch(event.request))
+        caches.match(event.request).then(resp => resp || fetch(event.request))
     );
 });

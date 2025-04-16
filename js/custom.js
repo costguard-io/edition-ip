@@ -3,29 +3,26 @@
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
-    authDomain: "costguard.firebaseapp.com",
-    projectId: "costguard",
-    storageBucket: "costguard.firebasestorage.app",
+    apiKey:            "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
+    authDomain:        "costguard.firebaseapp.com",
+    projectId:         "costguard",
+    storageBucket:     "costguard.firebasestorage.app",
     messagingSenderId: "873736687737",
-    appId: "1:873736687737:web:be444e90d27f23364544a8"
+    appId:             "1:873736687737:web:be444e90d27f23364544a8"
 };
 
 function requestNotificationPermission() {
     return Notification.requestPermission();
 }
 
-function waitForServiceWorker(timeout = 5000) {
-    return new Promise((resolve, reject) => {
-        navigator.serviceWorker.ready.then(resolve).catch(reject);
-        setTimeout(() => reject(new Error('SW ready timeout')), timeout);
-    });
+function waitForServiceWorker() {
+    return navigator.serviceWorker.ready;
 }
 
 function registerPushDevice(jwt) {
     console.log('[registerPushDevice] JWT:', jwt);
     if (!navigator.serviceWorker || !firebase.messaging) {
-        console.warn('[registerPushDevice] unsupported environment');
+        console.warn('[registerPushDevice] unsupported');
         return Promise.resolve(null);
     }
 
@@ -33,7 +30,7 @@ function registerPushDevice(jwt) {
         || window.navigator.standalone;
     const allowDev = stateTagApp.env !== 'production';
     if (!isStandalone && !allowDev) {
-        console.warn('[registerPushDevice] not PWA mode');
+        console.warn('[registerPushDevice] not PWA');
         return Promise.resolve(null);
     }
 
@@ -41,23 +38,22 @@ function registerPushDevice(jwt) {
         console.log('[registerPushDevice] permission:', permission);
         if (permission !== 'granted') return null;
 
-        return waitForServiceWorker().then(registration => {
-            console.log('[registerPushDevice] SW ready:', registration);
-            const messaging = firebase.messaging();
-            return messaging.getToken({
+        return waitForServiceWorker().then(reg => {
+            console.log('[registerPushDevice] SW ready');
+            return firebase.messaging().getToken({
                 vapidKey: VAPID_KEY,
-                serviceWorkerRegistration: registration
+                serviceWorkerRegistration: reg
             });
         }).then(token => {
             if (!token) {
                 console.warn('[registerPushDevice] no token');
                 return null;
             }
-            const agent = navigator.userAgent;
+            const agent    = navigator.userAgent;
             const platform = /android/i.test(agent) ? 'android'
                 : /iphone|ipad|ipod/i.test(agent) ? 'ios'
                     : 'web';
-            const result = { token, platform, agent };
+            const result   = { token, platform, agent };
             console.log('[registerPushDevice] success:', result);
             return result;
         }).catch(err => {
@@ -68,7 +64,7 @@ function registerPushDevice(jwt) {
 }
 
 function handleNotificationData(data) {
-    console.log('Notification payload received:', data);
+    console.log('Notification payload:', data);
     // your app logic here
 }
 
@@ -80,9 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/service-workers.js', { scope: '/' })
-            .then(reg => console.log('[SW] registered', reg))
+            .then(reg => console.log('[SW] registered'))
             .catch(err => console.error('[SW] reg failed', err));
 
+        // listen for SW messages
         navigator.serviceWorker.addEventListener('message', event => {
             if (event.data?.type === 'notification-click') {
                 handleNotificationData(event.data.data);
@@ -91,16 +88,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.debug('SW log:', event.data.msg, event.data.data);
             }
         });
-    } else {
-        console.warn('[SW] not supported');
+
+        // fallback onmessage
+        navigator.serviceWorker.onmessage = event => {
+            if (event.data?.type === 'notification-click') {
+                handleNotificationData(event.data.data);
+            }
+        };
     }
 
+    // handle URL param
     const params = new URLSearchParams(window.location.search);
-    const raw = params.get('notification');
+    const raw    = params.get('notification');
     if (raw) {
         try {
-            const data = JSON.parse(decodeURIComponent(raw));
-            handleNotificationData(data);
+            handleNotificationData(JSON.parse(decodeURIComponent(raw)));
         } catch (e) {
             console.error('Invalid notification param', e);
         }
