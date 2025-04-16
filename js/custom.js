@@ -16,7 +16,7 @@ const messaging = firebase.messaging();
 
 // Immediately register SW
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js').then(reg => {
+    navigator.serviceWorker.register('/service-workers.js').then(reg => {
         console.log('[SW] Registered:', reg.scope);
     });
 }
