@@ -10,33 +10,32 @@ const firebaseConfig = {
     appId:             "1:873736687737:web:be444e90d27f23364544a8"
 };
 
-// Init Firebase
+// Initialize Firebase
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
     console.log('[custom] Firebase initialized');
 }
 const messaging = firebase.messaging();
 
-// Debug: log controller & registration scope
-if ('serviceWorker' in navigator) {
+// Register Service Worker on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    if (!('serviceWorker' in navigator)) {
+        console.warn('[custom] SW unsupported');
+        return;
+    }
+
     navigator.serviceWorker.register('/service-workers.js', { scope: '/' })
         .then(reg => {
             console.log('[custom] SW registered, scope:', reg.scope);
-            console.log('[custom] controller (should be non-null after reload):', navigator.serviceWorker.controller);
+            console.log('[custom] controller:', navigator.serviceWorker.controller?.scriptURL);
         })
-        .catch(err => console.error('[custom] SW registration failed', err));
-}
-
-// Global reload handler (from SW activate)
-navigator.serviceWorker?.addEventListener('message', event => {
-    if (event.data?.type === 'reload-window') {
-        console.log('[custom] reload-window message received — reloading to get SW control');
-        window.location.reload();
-    }
+        .catch(err => {
+            console.error('[custom] SW registration failed:', err);
+        });
 });
 
-// SW logs & notification-click
-navigator.serviceWorker?.addEventListener('message', event => {
+// Listen for messages from SW
+navigator.serviceWorker.addEventListener('message', event => {
     if (event.data?.type === 'sw-log') {
         console.debug('[SW]', event.data.msg, event.data.data);
     }
@@ -45,8 +44,8 @@ navigator.serviceWorker?.addEventListener('message', event => {
     }
 });
 
-// Hash‑based fallback on load
-(function handleHash() {
+// Fallback: parse notification hash on initial load
+window.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash;
     if (hash.startsWith('#notification=')) {
         try {
@@ -56,17 +55,16 @@ navigator.serviceWorker?.addEventListener('message', event => {
             console.error('[custom] Invalid hash payload', e);
         }
     }
-})();
+});
 
-// requestPermission & getToken
+// Expose push‑device registration
 function registerPushDevice(jwt) {
     console.log('[registerPushDevice] JWT:', jwt);
-
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches
         || window.navigator.standalone;
     const allowDev = stateTagApp.env !== 'production';
     if (!isStandalone && !allowDev) {
-        console.warn('[registerPushDevice] not PWA mode');
+        console.warn('[registerPushDevice] not running in PWA mode');
         return Promise.resolve(null);
     }
 
@@ -78,10 +76,16 @@ function registerPushDevice(jwt) {
         })
         .then(reg => {
             if (!reg) return null;
-            return messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+            return messaging.getToken({
+                vapidKey: VAPID_KEY,
+                serviceWorkerRegistration: reg
+            });
         })
         .then(token => {
-            if (!token) return null;
+            if (!token) {
+                console.warn('[registerPushDevice] no FCM token');
+                return null;
+            }
             const ua = navigator.userAgent;
             const platform = /android/i.test(ua) ? 'android'
                 : /iphone|ipad|ipod/i.test(ua) ? 'ios'
@@ -99,5 +103,5 @@ function registerPushDevice(jwt) {
 window.registerPushDevice = registerPushDevice;
 window.handleNotificationData = function(data) {
     console.log('[custom] Notification payload received:', data);
-    // ← your app logic here
+    // ← your app logic here (e.g. router.push or UI update)
 };
