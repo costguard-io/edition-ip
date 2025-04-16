@@ -15,16 +15,28 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
     console.log('[custom] Firebase initialized');
 }
-
 const messaging = firebase.messaging();
 
-function handleNotificationData(data) {
-    console.log('[custom] Notification payload:', data);
-    // ← your app logic here (router push, UI update…)
+// Debug: log controller & registration scope
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-workers.js', { scope: '/' })
+        .then(reg => {
+            console.log('[custom] SW registered, scope:', reg.scope);
+            console.log('[custom] controller (should be non-null after reload):', navigator.serviceWorker.controller);
+        })
+        .catch(err => console.error('[custom] SW registration failed', err));
 }
 
-// Listen for SW logs & clicks
-navigator.serviceWorker.addEventListener('message', event => {
+// Global reload handler (from SW activate)
+navigator.serviceWorker?.addEventListener('message', event => {
+    if (event.data?.type === 'reload-window') {
+        console.log('[custom] reload-window message received — reloading to get SW control');
+        window.location.reload();
+    }
+});
+
+// SW logs & notification-click
+navigator.serviceWorker?.addEventListener('message', event => {
     if (event.data?.type === 'sw-log') {
         console.debug('[SW]', event.data.msg, event.data.data);
     }
@@ -33,7 +45,7 @@ navigator.serviceWorker.addEventListener('message', event => {
     }
 });
 
-// Parse on-load hash
+// Hash‑based fallback on load
 (function handleHash() {
     const hash = window.location.hash;
     if (hash.startsWith('#notification=')) {
@@ -46,21 +58,15 @@ navigator.serviceWorker.addEventListener('message', event => {
     }
 })();
 
-// Register SW
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-workers.js', { scope: '/' })
-        .then(() => console.log('[custom] SW registered'))
-        .catch(err => console.error('[custom] SW reg failed', err));
-}
-
-// Push registration
+// requestPermission & getToken
 function registerPushDevice(jwt) {
     console.log('[registerPushDevice] JWT:', jwt);
+
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches
         || window.navigator.standalone;
     const allowDev = stateTagApp.env !== 'production';
     if (!isStandalone && !allowDev) {
-        console.warn('[registerPushDevice] not PWA');
+        console.warn('[registerPushDevice] not PWA mode');
         return Promise.resolve(null);
     }
 
@@ -91,3 +97,7 @@ function registerPushDevice(jwt) {
 }
 
 window.registerPushDevice = registerPushDevice;
+window.handleNotificationData = function(data) {
+    console.log('[custom] Notification payload received:', data);
+    // ← your app logic here
+};

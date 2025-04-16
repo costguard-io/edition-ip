@@ -13,10 +13,8 @@ firebase.initializeApp({
 });
 
 function swLog(msg, data) {
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
-        .then(windows => windows.forEach(win =>
-            win.postMessage({ type:'sw-log', msg, data })
-        ));
+    clients.matchAll({ type:'window', includeUncontrolled:true })
+        .then(wins => wins.forEach(w => w.postMessage({ type:'sw-log', msg, data })));
     console.log('[SW]', msg, data);
 }
 
@@ -35,9 +33,7 @@ self.addEventListener('push', event => {
         data: payload.data || payload
     };
 
-    event.waitUntil(
-        self.registration.showNotification(title, options)
-    );
+    event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener('notificationclick', event => {
@@ -48,19 +44,18 @@ self.addEventListener('notificationclick', event => {
     const hash = '#notification=' + encodeURIComponent(JSON.stringify(data));
 
     event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true })
-            .then(windows => {
-                if (windows.length) {
-                    const win = windows[0];
-                    win.postMessage({ type:'notification-click', data });
-                    win.focus();
-                    return win.navigate('/' + hash);
-                }
-                return clients.openWindow('/' + hash)
-                    .then(newWin => {
-                        if (newWin) newWin.postMessage({ type:'notification-click', data });
-                    });
-            })
+        clients.matchAll({ type:'window', includeUncontrolled:true }).then(wins => {
+            if (wins.length) {
+                const w = wins[0];
+                // postMessage before navigate
+                w.postMessage({ type:'notification-click', data });
+                w.focus();
+                return w.navigate('/' + hash);
+            }
+            return clients.openWindow('/' + hash).then(newWin => {
+                if (newWin) newWin.postMessage({ type:'notification-click', data });
+            });
+        })
     );
 });
 
@@ -102,12 +97,16 @@ self.addEventListener('activate', event => {
             Promise.all(
                 keys.filter(k => k !== CACHE_NAME).map(old => caches.delete(old))
             )
-        ).then(() => self.clients.claim())
+        )
+            .then(() => {
+                self.clients.claim();
+                // tell all pages to reload so they become "controlled"
+                return self.clients.matchAll({ type:'window', includeUncontrolled:true })
+                    .then(wins => wins.forEach(w => w.postMessage({ type:'reload-window' })));
+            })
     );
 });
 
 self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request).then(resp => resp || fetch(event.request))
-    );
+    event.respondWith(caches.match(event.request).then(r => r || fetch(event.request)));
 });
