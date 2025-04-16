@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+        navigator.serviceWorker.register('/service-workers.js', { scope: '/' })
             .then(reg => {
                 console.log('[App] SW registered:', reg);
                 return reg;
