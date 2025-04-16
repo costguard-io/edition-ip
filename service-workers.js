@@ -10,13 +10,14 @@ firebase.initializeApp({
     appId: "1:873736687737:web:be444e90d27f23364544a8"
 });
 
-function swLog(msg, data) {
-    clients.matchAll({type: 'window', includeUncontrolled: true})
-        .then(wins => wins.forEach(w => w.postMessage({type: 'sw-log', msg, data})));
-    console.log('[SW]', msg, data);
-}
+const BUILD = '1.3.20'; // this gets replaced during build
 
-swLog('⚡️ SW loaded 1.3.19', null);
+// Optional: postMessage helper if you want to forward logs to the client
+function swLog(msg, data) {
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+        .then(wins => wins.forEach(w => w.postMessage({ type: 'sw-log', msg, data })));
+    console.log(`[SW v${BUILD}] ${msg}`, data ?? '');
+}
 
 self.addEventListener('push', event => {
     let payload = {};
@@ -27,6 +28,7 @@ self.addEventListener('push', event => {
             swLog('push: invalid JSON', event.data.text());
         }
     }
+
     swLog('Push received', payload);
 
     const title = payload.notification?.title || 'Notification';
@@ -36,81 +38,40 @@ self.addEventListener('push', event => {
         data: payload.data || payload
     };
 
-    event.waitUntil(
-        self.registration.showNotification(title, options)
-    );
+    event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener('notificationclick', event => {
     event.notification.close();
     const data = event.notification.data || {};
+
     swLog('Notification click', data);
-    const hash = '#notification=' + encodeURIComponent(JSON.stringify(data));
 
     event.waitUntil(
-        clients.matchAll({type: 'window', includeUncontrolled: true})
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
             .then(wins => {
+                const url = '/#notification=' + encodeURIComponent(JSON.stringify(data));
                 if (wins.length) {
-                    const w = wins[0];
-                    w.postMessage({type: 'notification-click', data});
-                    w.focus();
-                    return w.navigate('/' + hash);
+                    wins[0].postMessage({ type: 'notification-click', data });
+                    wins[0].focus();
+                    return wins[0].navigate(url);
                 }
-                return clients.openWindow('/' + hash)
-                    .then(newWin => {
-                        if (newWin) newWin.postMessage({type: 'notification-click', data});
-                    });
+                return clients.openWindow(url);
             })
     );
 });
 
-const CACHE_NAME = 'costguard-v1.3.19';
-const urlsToCache = [
-    '/index.html',
-    '/cache.manifest',
-    '/favicon/apple-touch-icon.png',
-
-    '/favicon/favicon.ico',
-    '/favicon/icon-192.png',
-    '/favicon/icon-512.png',
-
-    '/favicon/icon-maskable.png',
-    '/css/custom.css',
-    '/css/cutestrap.css',
-
-    '/js/app.js',
-    '/js/custom.js',
-    '/js/sta-api.js',
-    '/js/sta-config.js',
-    '/js/sta-io.js',
-    '/js/sta-nebula.js',
-    '/js/sta-socket.js',
-    '/js/sta-state.js',
-    '/js/stripe.js'
-];
-
 self.addEventListener('install', event => {
-    swLog('install');
+    swLog(`Installing SW v${BUILD}`);
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(urlsToCache))
-            .then(() => self.skipWaiting())
+        caches.open('costguard-v' + BUILD).then(cache => cache.addAll([
+            '/index.html',
+            '/js/custom.js'
+        ])).then(() => self.skipWaiting())
     );
 });
 
 self.addEventListener('activate', event => {
-    swLog('activate');
-    event.waitUntil(
-        caches.keys().then(keys =>
-            Promise.all(
-                keys.filter(key => key !== CACHE_NAME).map(old => caches.delete(old))
-            )
-        ).then(() => self.clients.claim())  // Explicitly claim clients immediately
-    );
-});
-
-self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request).then(resp => resp || fetch(event.request))
-    );
+    swLog(`Activating SW v${BUILD}`);
+    event.waitUntil(self.clients.claim());
 });
