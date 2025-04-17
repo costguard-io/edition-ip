@@ -40,7 +40,7 @@ self.addEventListener('notificationclick', event => {
     );
 });
 
-const CACHE_NAME = 'cg-static-v1.3.40';
+const CACHE_NAME = 'cg-static-v1.3.41';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
@@ -59,7 +59,7 @@ const PRECACHE_URLS = [
     '/manifest.json'
 ];
 
-console.log('🔥 SW loaded: version 1.3.40');
+console.log('🔥 SW loaded: version 1.3.41');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');
