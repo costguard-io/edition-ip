@@ -1,4 +1,4 @@
-const SW_VERSION = '#BUILD#';
+const SW_VERSION = '1.3.36';
 const SW_FILE = `/service-worker.js?v=${SW_VERSION}`;
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
