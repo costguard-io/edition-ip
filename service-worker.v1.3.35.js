@@ -1,4 +1,3 @@
-// --- Firebase Push Support ---
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
 
@@ -12,24 +11,55 @@ firebase.initializeApp({
 });
 
 const messaging = firebase.messaging();
+
 messaging.onBackgroundMessage(payload => {
     console.log('📬 Firebase BG Message:', payload);
     const { title, body, icon } = payload.notification || {};
     self.registration.showNotification(title || 'Notification', { body, icon });
 });
 
-// --- Cache Setup ---
-const CACHE_NAME = 'cg-static-v1.3.34';
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+
+    let payload = {};
+    try {
+        payload = JSON.parse(event.notification.title);
+    } catch (err) {
+        console.warn('❌ Could not parse JSON from notification title:', err);
+    }
+
+    const encoded = encodeURIComponent(JSON.stringify(payload));
+    const targetUrl = `/push-action?data=${encoded}`;
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientsArr => {
+            const existing = clientsArr.find(c => c.url.includes('/') && 'focus' in c);
+            if (existing) return existing.focus();
+            return clients.openWindow(targetUrl);
+        })
+    );
+});
+
+const CACHE_NAME = 'cg-static-v1.3.35';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
     '/css/custom.css',
     '/js/app.js',
-    '/js/custom.js',
+    '/js/sta-api.js',
+    '/js/sta-config.js',
+    '/js/sta-io.js',
+    '/js/sta-nebula.js',
+    '/js/sta-socket.js',
+    '/js/sta-state.js',
+    '/js/stripe.js',
     '/favicon/favicon.ico',
+    '/favicon/icon-192.png',
+    '/favicon/icon-512.png',
+    '/manifest.json'
 ];
 
-console.log('🔥 SW loaded: version 1.3.34');
+console.log('🔥 SW loaded: version 1.3.35');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');
