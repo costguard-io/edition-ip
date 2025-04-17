@@ -1,4 +1,4 @@
-const SW_FILE = '/service-worker.v1.3.39.js';
+const SW_FILE = '/service-worker.v1.3.40.js';
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
 const firebaseConfig = {
@@ -90,7 +90,9 @@ window.addEventListener('load', async () => {
             const newSW = reg.installing;
             newSW?.addEventListener('statechange', () => {
                 if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('📦 New SW installed, pending activation');
+                    console.log('📦 New SW installed, reloading...');
+                    newSW.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
                 }
             });
         });
