@@ -45,7 +45,7 @@ self.addEventListener('notificationclick', event => {
     );
 });
 
-const CACHE_NAME = 'cg-static-v3.8.8';
+const CACHE_NAME = 'cg-static-v3.6.8';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
@@ -64,7 +64,7 @@ const PRECACHE_URLS = [
     '/manifest.json'
 ];
 
-console.log('🔥 SW loaded: version 3.8.8');
+console.log('🔥 SW loaded: version 3.6.8');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');

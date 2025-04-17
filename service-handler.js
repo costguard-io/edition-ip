@@ -1,4 +1,4 @@
-const SW_FILE = '/service-worker.v3.8.8.js';
+const SW_FILE = '/service-worker.v3.6.8.js';
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
 const firebaseConfig = {
