@@ -1,4 +1,4 @@
-const SW_FILE = '/service-worker.v1.3.45.js';
+const SW_FILE = '/service-worker.v1.3.46.js';
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
 const firebaseConfig = {
@@ -16,7 +16,7 @@ if (!firebase.apps.length) {
 const messaging = firebase.messaging();
 
 // Register device with token
-window.registerPushDevice = async function (token) {
+window.registerPushDevice = async function(token) {
     try {
         console.log('[registerPushDevice] JWT:', token);
 
@@ -66,18 +66,18 @@ messaging.onMessage(payload => {
 
 // Message from SW (background click)
 navigator.serviceWorker.addEventListener('message', event => {
-    const {type, data} = event.data || {};
+    const { type, data } = event.data || {};
     if (type === 'sw-log') console.log('[FROM SW]', data);
     if (type === 'notification-click') handleNotificationData(data);
 });
 
 // Shared handler
 window.handleNotificationData = function (data) {
+    console.log('✅ handleNotificationData triggered with:', data);
     setTimeout(() => {
-        console.log('✅ handleNotificationData triggered with:', data);
         alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}`);
         // You can route or fetch here instead of alert
-    }, 1000);
+    }, 300);
 };
 
 // Register service worker
@@ -85,23 +85,23 @@ window.addEventListener('load', async () => {
     console.log('🧠 window.load fired');
 
     try {
-        const reg = await navigator.serviceWorker.register(SW_FILE, {scope: '/'});
+        const reg = await navigator.serviceWorker.register(SW_FILE, { scope: '/' });
         console.log('✅ SW registered:', reg.scope);
 
-        if (reg.waiting) reg.waiting.postMessage({type: 'SKIP_WAITING'});
+        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
 
         reg.addEventListener('updatefound', () => {
             const newSW = reg.installing;
             newSW?.addEventListener('statechange', () => {
                 if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
                     console.log('📦 New SW installed, reloading...');
-                    newSW.postMessage({type: 'SKIP_WAITING'});
+                    newSW.postMessage({ type: 'SKIP_WAITING' });
                     window.location.reload();
                 }
             });
         });
 
-        const trySkip = () => reg.waiting?.postMessage({type: 'SKIP_WAITING'});
+        const trySkip = () => reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
         window.addEventListener('beforeunload', trySkip);
         window.addEventListener('pagehide', trySkip);
 
