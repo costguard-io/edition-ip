@@ -1,4 +1,4 @@
-const SW_VERSION = '1.3.33';
+const SW_VERSION = '1.3.34';
 const SW_FILE = `/service-worker.v${SW_VERSION}.js`;
 
 if ('serviceWorker' in navigator) {

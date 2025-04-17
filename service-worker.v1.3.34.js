@@ -19,7 +19,7 @@ messaging.onBackgroundMessage(payload => {
 });
 
 // --- Cache Setup ---
-const CACHE_NAME = 'cg-static-v1.3.33';
+const CACHE_NAME = 'cg-static-v1.3.34';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
@@ -29,7 +29,7 @@ const PRECACHE_URLS = [
     '/favicon/favicon.ico',
 ];
 
-console.log('🔥 SW loaded: version 1.3.33');
+console.log('🔥 SW loaded: version 1.3.34');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');
