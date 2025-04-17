@@ -1,4 +1,4 @@
-const SW_FILE = '/service-worker.v1.3.38.js';
+const SW_FILE = '/service-worker.v1.3.39.js';
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
 const firebaseConfig = {
@@ -69,11 +69,17 @@ navigator.serviceWorker.addEventListener('message', event => {
 });
 
 window.handleNotificationData = function (data) {
-    alert('handleNotificationData');
-    //console.log('✅ Notification data:', data);
+    console.log('✅ handleNotificationData triggered with:', data);
+
+    // Use setTimeout to avoid iOS alert suppression
+    setTimeout(() => {
+        alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}`);
+    }, 300);
 };
 
 window.addEventListener('load', async () => {
+    console.log('🧠 window.load fired');
+
     try {
         const reg = await navigator.serviceWorker.register(SW_FILE, { scope: '/' });
         console.log('✅ SW registered:', reg.scope);
@@ -93,14 +99,19 @@ window.addEventListener('load', async () => {
         window.addEventListener('beforeunload', trySkip);
         window.addEventListener('pagehide', trySkip);
 
+        // Check for push data on initial load
         const params = new URLSearchParams(window.location.search);
         const raw = params.get('data');
+
+        console.log('🔍 raw ?data param:', raw);
+
         if (raw) {
             try {
                 const data = JSON.parse(decodeURIComponent(raw));
+                console.log('✅ Parsed push data:', data);
                 handleNotificationData(data);
             } catch (e) {
-                console.warn('Invalid push data in query param', e);
+                console.warn('❌ Failed to parse push data:', e);
             }
         }
     } catch (err) {
