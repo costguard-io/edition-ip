@@ -1,4 +1,4 @@
-const SW_FILE = '/service-worker.v1.3.37.js';
+const SW_FILE = '/service-worker.v1.3.38.js';
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
 const firebaseConfig = {
@@ -69,7 +69,8 @@ navigator.serviceWorker.addEventListener('message', event => {
 });
 
 window.handleNotificationData = function (data) {
-    console.log('✅ Notification data:', data);
+    alert('handleNotificationData');
+    //console.log('✅ Notification data:', data);
 };
 
 window.addEventListener('load', async () => {
