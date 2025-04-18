@@ -13,8 +13,7 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(payload => {
-    console.log('📬 Firebase BG Message:', payload);
-
+    console.log('📬 BG push:', payload);
     const { title, body, icon } = payload.notification || {};
     const data = payload.data || {};
 
@@ -27,16 +26,14 @@ messaging.onBackgroundMessage(payload => {
 
 self.addEventListener('notificationclick', event => {
     const data = event.notification?.data || {};
-    console.log('🖱️ Notification clicked:', data);
-
     event.notification.close();
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientsArr => {
-            const existing = clientsArr.find(c => c.url.includes('/') && 'focus' in c);
-            if (existing) {
-                existing.postMessage({ type: 'notification-click', data });
-                return existing.focus();
+            const client = clientsArr.find(c => c.url.includes('/') && 'focus' in c);
+            if (client) {
+                client.postMessage({ type: 'notification-click', data });
+                return client.focus();
             } else {
                 const encoded = encodeURIComponent(JSON.stringify(data));
                 return clients.openWindow(`/?data=${encoded}`);
@@ -45,26 +42,17 @@ self.addEventListener('notificationclick', event => {
     );
 });
 
-const CACHE_NAME = 'cg-static-v3.7.16';
+const CACHE_NAME = 'cg-static-v3.7.17';
 const PRECACHE_URLS = [
-    '/',
-    '/index.html',
-    '/css/custom.css',
-    '/js/app.js',
-    '/js/sta-api.js',
-    '/js/sta-config.js',
-    '/js/sta-io.js',
-    '/js/sta-nebula.js',
-    '/js/sta-socket.js',
-    '/js/sta-state.js',
-    '/js/stripe.js',
-    '/favicon/favicon.ico',
-    '/favicon/icon-192.png',
-    '/favicon/icon-512.png',
-    '/manifest.json'
+    '/', '/index.html', '/manifest.json',
+    '/css/custom.css', '/css/cutestrap.css',
+    '/js/app.js', '/js/sta-api.js', '/js/sta-config.js',
+    '/js/sta-io.js', '/js/sta-nebula.js', '/js/sta-socket.js',
+    '/js/sta-state.js', '/js/stripe.js',
+    '/favicon/favicon.ico', '/favicon/icon-192.png', '/favicon/icon-512.png'
 ];
 
-console.log('🔥 SW loaded: version 3.7.16');
+console.log('🔥 SW loaded: 3.7.17');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');

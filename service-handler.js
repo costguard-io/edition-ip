@@ -1,4 +1,4 @@
-const SW_FILE = '/service-worker.v3.7.16.js';
+const SW_FILE = '/service-worker.v3.7.17.js';
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
 const firebaseConfig = {
@@ -15,11 +15,9 @@ if (!firebase.apps.length) {
 }
 const messaging = firebase.messaging();
 
-// Register device with token
-window.registerPushDevice = async function(token) {
+window.registerPushDevice = async function (token) {
     try {
         console.log('[registerPushDevice] JWT:', token);
-
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') return null;
 
@@ -39,8 +37,6 @@ window.registerPushDevice = async function(token) {
             agent: navigator.userAgent
         };
 
-        console.log('[registerPushDevice] device:', device);
-
         await fetch('/api/device/register', {
             method: 'POST',
             headers: {
@@ -50,6 +46,7 @@ window.registerPushDevice = async function(token) {
             body: JSON.stringify(device)
         });
 
+        console.log('[registerPushDevice] device:', device);
         return device;
     } catch (err) {
         console.error('[registerPushDevice] Error:', err);
@@ -57,36 +54,30 @@ window.registerPushDevice = async function(token) {
     }
 };
 
-// Foreground push
+// Handle live foreground push
 messaging.onMessage(payload => {
     console.log('📥 Foreground push received:', payload);
     const data = payload.data || {};
     handleNotificationData(data);
 });
 
-// Message from SW (background click)
+// Handle background SW click event
 navigator.serviceWorker.addEventListener('message', event => {
     const { type, data } = event.data || {};
-    if (type === 'sw-log') console.log('[FROM SW]', data);
     if (type === 'notification-click') handleNotificationData(data);
+    if (type === 'sw-log') console.log('[SW LOG]', data);
 });
 
-// Shared handler
+// Unified handler
 window.handleNotificationData = function (data) {
-    setInterval(() =>{
-        alert('running handleNotificationData')
-    }, 10000);
+    console.log('✅ handleNotificationData triggered with:', data);
     setTimeout(() => {
         alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}`);
-        alert(`STA NameSpace: ${stateTagApp.namespace}`);
-        // You can route or fetch here instead of alert
     }, 300);
 };
 
-// Register service worker
+// SW registration
 window.addEventListener('load', async () => {
-    console.log('🧠 window.load fired');
-
     try {
         const reg = await navigator.serviceWorker.register(SW_FILE, { scope: '/' });
         console.log('✅ SW registered:', reg.scope);
@@ -97,20 +88,16 @@ window.addEventListener('load', async () => {
             const newSW = reg.installing;
             newSW?.addEventListener('statechange', () => {
                 if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('📦 New SW installed, reloading...');
                     newSW.postMessage({ type: 'SKIP_WAITING' });
                     window.location.reload();
                 }
             });
         });
 
-        const trySkip = () => reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
-        window.addEventListener('beforeunload', trySkip);
-        window.addEventListener('pagehide', trySkip);
+        window.addEventListener('beforeunload', () => reg.waiting?.postMessage({ type: 'SKIP_WAITING' }));
+        window.addEventListener('pagehide', () => reg.waiting?.postMessage({ type: 'SKIP_WAITING' }));
 
-        // Handle ?data= payload
-        const params = new URLSearchParams(window.location.search);
-        const raw = params.get('data');
+        const raw = new URLSearchParams(window.location.search).get('data');
         if (raw) {
             try {
                 const data = JSON.parse(decodeURIComponent(raw));
