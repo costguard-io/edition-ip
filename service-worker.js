@@ -14,33 +14,38 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(payload => {
     console.log('📬 Firebase BG Message:', payload);
+
     const { title, body, icon } = payload.notification || {};
-    self.registration.showNotification(title || 'Notification', { body, icon });
+    const data = payload.data || {};
+
+    self.registration.showNotification(title || 'Notification', {
+        body,
+        icon: icon || '/favicon/icon-192.png',
+        data
+    });
 });
 
 self.addEventListener('notificationclick', event => {
+    const data = event.notification?.data || {};
+    console.log('🖱️ Notification clicked:', data);
+
     event.notification.close();
-
-    let payload = {};
-    try {
-        payload = JSON.parse(event.notification.title);
-    } catch (err) {
-        console.warn('❌ Could not parse JSON from notification title:', err);
-    }
-
-    const encoded = encodeURIComponent(JSON.stringify(payload));
-    const targetUrl = `/push-action?data=${encoded}`;
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientsArr => {
             const existing = clientsArr.find(c => c.url.includes('/') && 'focus' in c);
-            if (existing) return existing.focus();
-            return clients.openWindow(targetUrl);
+            if (existing) {
+                existing.postMessage({ type: 'notification-click', data });
+                return existing.focus();
+            } else {
+                const encoded = encodeURIComponent(JSON.stringify(data));
+                return clients.openWindow(`/?data=${encoded}`);
+            }
         })
     );
 });
 
-const CACHE_NAME = 'cg-static-v1.3.43';
+const CACHE_NAME = 'cg-static-v3.7.22';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
@@ -59,7 +64,7 @@ const PRECACHE_URLS = [
     '/manifest.json'
 ];
 
-console.log('🔥 SW loaded: version 1.3.43');
+console.log('🔥 SW loaded: version 3.7.22');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');

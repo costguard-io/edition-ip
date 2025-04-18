@@ -1,4 +1,4 @@
-const SW_FILE = '/service-worker.v1.3.43.js';
+const SW_FILE = '/service-worker.v3.7.22.js';
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
 const firebaseConfig = {
@@ -15,15 +15,13 @@ if (!firebase.apps.length) {
 }
 const messaging = firebase.messaging();
 
+// Register device with token
 window.registerPushDevice = async function(token) {
     try {
         console.log('[registerPushDevice] JWT:', token);
 
         const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-            console.warn('[registerPushDevice] Notification permission not granted');
-            return null;
-        }
+        if (permission !== 'granted') return null;
 
         const reg = await navigator.serviceWorker.ready;
         const fcmToken = await messaging.getToken({
@@ -31,10 +29,7 @@ window.registerPushDevice = async function(token) {
             serviceWorkerRegistration: reg
         });
 
-        if (!fcmToken) {
-            console.warn('[registerPushDevice] No FCM token returned');
-            return null;
-        }
+        if (!fcmToken) return null;
 
         const device = {
             token: fcmToken,
@@ -62,30 +57,32 @@ window.registerPushDevice = async function(token) {
     }
 };
 
-// Foreground push message handler
+// Foreground push
 messaging.onMessage(payload => {
     console.log('📥 Foreground push received:', payload);
-    const { title, body } = payload.notification || {};
-    setTimeout(() => {
-        alert(`📲 Push Received\nTitle: ${title}\nBody: ${body}`);
-    }, 300); // helps avoid alert being blocked on iOS
+    const data = payload.data || {};
+    handleNotificationData(data);
 });
 
+// Message from SW (background click)
 navigator.serviceWorker.addEventListener('message', event => {
     const { type, data } = event.data || {};
     if (type === 'sw-log') console.log('[FROM SW]', data);
     if (type === 'notification-click') handleNotificationData(data);
 });
 
+// Shared handler
 window.handleNotificationData = function (data) {
     console.log('✅ handleNotificationData triggered with:', data);
-
-    // Use setTimeout to avoid iOS alert suppression
     setTimeout(() => {
         alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}`);
+        alert(`STA NameSpace: ${stateTagApp.namespace}`);
+        console.log(data);
+        // You can route or fetch here instead of alert
     }, 300);
 };
 
+// Register service worker
 window.addEventListener('load', async () => {
     console.log('🧠 window.load fired');
 
@@ -110,16 +107,12 @@ window.addEventListener('load', async () => {
         window.addEventListener('beforeunload', trySkip);
         window.addEventListener('pagehide', trySkip);
 
-        // Check for push data on initial load
+        // Handle ?data= payload
         const params = new URLSearchParams(window.location.search);
         const raw = params.get('data');
-
-        console.log('🔍 raw ?data param:', raw);
-
         if (raw) {
             try {
                 const data = JSON.parse(decodeURIComponent(raw));
-                console.log('✅ Parsed push data:', data);
                 handleNotificationData(data);
             } catch (e) {
                 console.warn('❌ Failed to parse push data:', e);
