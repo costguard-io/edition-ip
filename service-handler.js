@@ -1,4 +1,4 @@
-const SW_FILE = '/service-worker.v1.3.45.js';
+const SW_FILE = '/service-worker.v1.3.39.js';
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
 const firebaseConfig = {
@@ -15,13 +15,15 @@ if (!firebase.apps.length) {
 }
 const messaging = firebase.messaging();
 
-// Register device with token
-window.registerPushDevice = async function (token) {
+window.registerPushDevice = async function(token) {
     try {
         console.log('[registerPushDevice] JWT:', token);
 
         const permission = await Notification.requestPermission();
-        if (permission !== 'granted') return null;
+        if (permission !== 'granted') {
+            console.warn('[registerPushDevice] Notification permission not granted');
+            return null;
+        }
 
         const reg = await navigator.serviceWorker.ready;
         const fcmToken = await messaging.getToken({
@@ -29,7 +31,10 @@ window.registerPushDevice = async function (token) {
             serviceWorkerRegistration: reg
         });
 
-        if (!fcmToken) return null;
+        if (!fcmToken) {
+            console.warn('[registerPushDevice] No FCM token returned');
+            return null;
+        }
 
         const device = {
             token: fcmToken,
@@ -57,60 +62,53 @@ window.registerPushDevice = async function (token) {
     }
 };
 
-// Foreground push
-messaging.onMessage(payload => {
-    console.log('📥 Foreground push received:', payload);
-    const data = payload.data || {};
-    handleNotificationData(data);
-});
-
-// Message from SW (background click)
 navigator.serviceWorker.addEventListener('message', event => {
-    const {type, data} = event.data || {};
+    const { type, data } = event.data || {};
     if (type === 'sw-log') console.log('[FROM SW]', data);
     if (type === 'notification-click') handleNotificationData(data);
 });
 
-// Shared handler
 window.handleNotificationData = function (data) {
+    console.log('✅ handleNotificationData triggered with:', data);
+
+    // Use setTimeout to avoid iOS alert suppression
     setTimeout(() => {
-        console.log('✅ handleNotificationData triggered with:', data);
         alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}`);
-        // You can route or fetch here instead of alert
-    }, 1000);
+    }, 300);
 };
 
-// Register service worker
 window.addEventListener('load', async () => {
     console.log('🧠 window.load fired');
 
     try {
-        const reg = await navigator.serviceWorker.register(SW_FILE, {scope: '/'});
+        const reg = await navigator.serviceWorker.register(SW_FILE, { scope: '/' });
         console.log('✅ SW registered:', reg.scope);
 
-        if (reg.waiting) reg.waiting.postMessage({type: 'SKIP_WAITING'});
+        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
 
         reg.addEventListener('updatefound', () => {
             const newSW = reg.installing;
             newSW?.addEventListener('statechange', () => {
                 if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('📦 New SW installed, reloading...');
-                    newSW.postMessage({type: 'SKIP_WAITING'});
-                    window.location.reload();
+                    console.log('📦 New SW installed, pending activation');
                 }
             });
         });
 
-        const trySkip = () => reg.waiting?.postMessage({type: 'SKIP_WAITING'});
+        const trySkip = () => reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
         window.addEventListener('beforeunload', trySkip);
         window.addEventListener('pagehide', trySkip);
 
-        // Handle ?data= payload
+        // Check for push data on initial load
         const params = new URLSearchParams(window.location.search);
         const raw = params.get('data');
+
+        console.log('🔍 raw ?data param:', raw);
+
         if (raw) {
             try {
                 const data = JSON.parse(decodeURIComponent(raw));
+                console.log('✅ Parsed push data:', data);
                 handleNotificationData(data);
             } catch (e) {
                 console.warn('❌ Failed to parse push data:', e);
