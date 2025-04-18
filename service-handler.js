@@ -1,4 +1,4 @@
-const SW_FILE = '/service-worker.v3.7.12.js';
+const SW_FILE = '/service-worker.v3.7.13.js';
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
 const firebaseConfig = {
@@ -73,11 +73,9 @@ navigator.serviceWorker.addEventListener('message', event => {
 
 // Shared handler
 window.handleNotificationData = function (data) {
-    console.log('✅ handleNotificationData triggered with:', data);
     setTimeout(() => {
-        alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}`);
+        //alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}`);
         alert(`STA NameSpace: ${stateTagApp.namespace}`);
-        console.log(data);
         // You can route or fetch here instead of alert
     }, 300);
 };
