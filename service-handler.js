@@ -1,4 +1,4 @@
-const SW_FILE = '/service-worker.v1.3.39.js';
+const SW_FILE = '/service-worker.v1.3.43.js';
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
 const firebaseConfig = {
@@ -62,6 +62,15 @@ window.registerPushDevice = async function(token) {
     }
 };
 
+// Foreground push message handler
+messaging.onMessage(payload => {
+    console.log('📥 Foreground push received:', payload);
+    const { title, body } = payload.notification || {};
+    setTimeout(() => {
+        alert(`📲 Push Received\nTitle: ${title}\nBody: ${body}`);
+    }, 300); // helps avoid alert being blocked on iOS
+});
+
 navigator.serviceWorker.addEventListener('message', event => {
     const { type, data } = event.data || {};
     if (type === 'sw-log') console.log('[FROM SW]', data);
@@ -90,7 +99,9 @@ window.addEventListener('load', async () => {
             const newSW = reg.installing;
             newSW?.addEventListener('statechange', () => {
                 if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('📦 New SW installed, pending activation');
+                    console.log('📦 New SW installed, reloading...');
+                    newSW.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
                 }
             });
         });
