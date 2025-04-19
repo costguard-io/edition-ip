@@ -1,71 +1,124 @@
-// service-handler.js
-const SW_FILE = '/service-worker.js';
-const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomR4A8'; // truncated for brevity
+const SW_FILE = '/service-worker.v7.8.10.js';
+const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
-  authDomain: "costguard.firebaseapp.com",
-  projectId: "costguard",
-  storageBucket: "costguard.firebasestorage.app",
-  messagingSenderId: "873736687737",
-  appId: "1:873736687737:web:be444e90d27f23364544a8"
+    apiKey: "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
+    authDomain: "costguard.firebaseapp.com",
+    projectId: "costguard",
+    storageBucket: "costguard.firebasestorage.app",
+    messagingSenderId: "873736687737",
+    appId: "1:873736687737:web:be444e90d27f23364544a8"
 };
 
-// Initialize Firebase app and messaging
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const messaging = firebase.messaging();
 
-// Handle incoming messages in foreground
-messaging.onMessage(payload => {
-  const data = payload.data || {};
-  handleNotificationData(data);
-});
+// Register device with token
+window.registerPushDevice = async function(token) {
+    try {
+        console.log('[registerPushDevice] JWT:', token);
 
-// Listen for messages from the service worker (background clicks)
-navigator.serviceWorker.addEventListener('message', event => {
-  if (event.data?.type === 'notification-click') {
-    handleNotificationData(event.data.data);
-  }
-});
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') return null;
 
-// Notification data handler
-window.handleNotificationData = function(data) {
-  console.log('Received notification data:', data);
-  alert(`Notification Data\nModel: ${data.model}\nID: ${data.id}`);
+        const reg = await navigator.serviceWorker.ready;
+        const fcmToken = await messaging.getToken({
+            vapidKey: VAPID_KEY,
+            serviceWorkerRegistration: reg
+        });
+
+        if (!fcmToken) return null;
+
+        const device = {
+            token: fcmToken,
+            platform: /android/i.test(navigator.userAgent) ? 'android'
+                : /iphone|ipad|ipod/i.test(navigator.userAgent) ? 'ios'
+                    : 'web',
+            agent: navigator.userAgent
+        };
+
+        console.log('[registerPushDevice] device:', device);
+
+        await fetch('/api/device/register', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(device)
+        });
+
+        return device;
+    } catch (err) {
+        console.error('[registerPushDevice] Error:', err);
+        return null;
+    }
 };
 
-// Register service worker and process URL data on load
+// Foreground push
+messaging.onMessage(payload => {
+    console.log('📥 Foreground push received:', payload);
+    const data = payload.data || {};
+    handleNotificationData(data);
+});
+
+// Message from SW (background click)
+navigator.serviceWorker.addEventListener('message', event => {
+    const { type, data } = event.data || {};
+    if (type === 'sw-log') console.log('[FROM SW]', data);
+    if (type === 'notification-click') handleNotificationData(data);
+});
+
+// Shared handler
+window.handleNotificationData = function (data) {
+    console.log('✅ handleNotificationData triggered with:', data);
+    setTimeout(() => {
+        alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}`);
+        alert(`STA NameSpace: ${stateTagApp.namespace}`);
+        console.log(data);
+        // You can route or fetch here instead of alert
+    }, 300);
+};
+
+// Register service worker
 window.addEventListener('load', async () => {
-  try {
-    const reg = await navigator.serviceWorker.register(SW_FILE, {scope: '/'});
-    console.log('Service Worker registered:', reg.scope);
+    console.log('🧠 window.load fired');
 
     try {
-      const fcmToken = await messaging.getToken({
-        vapidKey: VAPID_KEY,
-        serviceWorkerRegistration: reg
-      });
-      if (fcmToken) {
-        console.log('FCM Token:', fcmToken);
-      } else {
-        console.warn('No FCM token retrieved');
-      }
-    } catch (e) {
-      console.error('FCM getToken error:', e);
-    }
-  } catch (err) {
-    console.error('SW registration failed:', err);
-  }
+        const reg = await navigator.serviceWorker.register(SW_FILE, { scope: '/' });
+        console.log('✅ SW registered:', reg.scope);
 
-  // Cold-start notification data via URL
-  const params = new URLSearchParams(window.location.search);
-  const raw = params.get('data');
-  if (raw) {
-    try {
-      const data = JSON.parse(decodeURIComponent(raw));
-      handleNotificationData(data);
-    } catch (e) {
-      console.warn('Failed to parse push data from URL:', e);
+        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+
+        reg.addEventListener('updatefound', () => {
+            const newSW = reg.installing;
+            newSW?.addEventListener('statechange', () => {
+                if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('📦 New SW installed, reloading...');
+                    newSW.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
+                }
+            });
+        });
+
+        const trySkip = () => reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
+        window.addEventListener('beforeunload', trySkip);
+        window.addEventListener('pagehide', trySkip);
+
+        // Handle ?data= payload
+        const params = new URLSearchParams(window.location.search);
+        const raw = params.get('data');
+        if (raw) {
+            try {
+                const data = JSON.parse(decodeURIComponent(raw));
+                handleNotificationData(data);
+            } catch (e) {
+                console.warn('❌ Failed to parse push data:', e);
+            }
+        }
+    } catch (err) {
+        console.error('❌ SW registration failed:', err);
     }
-  }
 });

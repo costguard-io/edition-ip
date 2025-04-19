@@ -2,60 +2,98 @@ importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js'
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey: "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
-  authDomain: "costguard.firebaseapp.com",
-  projectId: "costguard",
-  storageBucket: "costguard.firebasestorage.app",
-  messagingSenderId: "873736687737",
-  appId: "1:873736687737:web:be444e90d27f23364544a8"
+    apiKey: "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
+    authDomain: "costguard.firebaseapp.com",
+    projectId: "costguard",
+    storageBucket: "costguard.firebasestorage.app",
+    messagingSenderId: "873736687737",
+    appId: "1:873736687737:web:be444e90d27f23364544a8"
 });
 
 const messaging = firebase.messaging();
 
-// Background message handler
 messaging.onBackgroundMessage(payload => {
-  const data = payload.data || {};
-  const { title, body, icon } = payload.notification || {};
-  self.registration.showNotification(title || 'Notification', {
-    body,
-    icon: icon || '/favicon/icon-192.png',
-    data
-  });
+    console.log('📬 Firebase BG Message:', payload);
+
+    const { title, body, icon } = payload.notification || {};
+    const data = payload.data || {};
+
+    self.registration.showNotification(title || 'Notification', {
+        body,
+        icon: icon || '/favicon/icon-192.png',
+        data
+    });
 });
 
-// Notification click handler
 self.addEventListener('notificationclick', event => {
-  const data = event.notification?.data || {};
-  event.notification.close();
-  event.waitUntil(
-    clients.matchAll({type: 'window', includeUncontrolled: true}).then(windowClients => {
-      if (windowClients.length) {
-        return windowClients[0].focus().then(client => {
-          client.postMessage({type:'notification-click', data});
-        });
-      }
-      const url = '/?data=' + encodeURIComponent(JSON.stringify(data));
-      return clients.openWindow(url);
-    })
-  );
+    const data = event.notification?.data || {};
+    console.log('🖱️ Notification clicked:', data);
+
+    event.notification.close();
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientsArr => {
+            const existing = clientsArr.find(c => c.url.includes('/') && 'focus' in c);
+            if (existing) {
+                existing.postMessage({ type: 'notification-click', data });
+                return existing.focus();
+            } else {
+                const encoded = encodeURIComponent(JSON.stringify(data));
+                return clients.openWindow(`/?data=${encoded}`);
+            }
+        })
+    );
 });
 
-// Cache assets on install
-const CACHE = 'static-v3.7.27';
-const ASSETS = ['/', '/index.html', '/css/custom.css', '/js/app.js', '/manifest.json'];
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
+const CACHE_NAME = 'cg-static-v7.8.10';
+const PRECACHE_URLS = [
+    '/',
+    '/index.html',
+    '/css/custom.css',
+    '/js/app.js',
+    '/js/sta-api.js',
+    '/js/sta-config.js',
+    '/js/sta-io.js',
+    '/js/sta-nebula.js',
+    '/js/sta-socket.js',
+    '/js/sta-state.js',
+    '/js/stripe.js',
+    '/favicon/favicon.ico',
+    '/favicon/icon-192.png',
+    '/favicon/icon-512.png',
+    '/manifest.json'
+];
+
+console.log('🔥 SW loaded: version 7.8.10');
+
+self.addEventListener('install', event => {
+    console.log('📦 Installing...');
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => cache.addAll(PRECACHE_URLS))
+            .then(() => self.skipWaiting())
+    );
 });
 
-// Clean old caches on activate
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(
-    keys.filter(k => k !== CACHE).map(k => caches.delete(k))
-  )).then(() => self.clients.claim()));
+self.addEventListener('activate', event => {
+    console.log('🚀 Activated');
+    event.waitUntil(
+        caches.keys().then(keys =>
+            Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+        ).then(() => self.clients.claim())
+    );
 });
 
-// Serve from cache
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+self.addEventListener('fetch', event => {
+    if (event.request.method !== 'GET') return;
+    event.respondWith(
+        caches.match(event.request).then(res => res || fetch(event.request))
+    );
+});
+
+self.addEventListener('message', event => {
+    if (event.data?.type === 'SKIP_WAITING') {
+        console.log('⏩ Skipping waiting');
+        self.skipWaiting();
+    }
 });
