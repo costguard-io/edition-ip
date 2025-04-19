@@ -66,7 +66,7 @@ messaging.onMessage(payload => {
     handleNotificationData(data);
 });
 
-// Message from SW (background click)
+// Background click (inter-context messaging)
 navigator.serviceWorker.addEventListener('message', event => {
     const { type, data } = event.data || {};
     if (type === 'sw-log') console.log('[FROM SW]', data);
@@ -83,11 +83,11 @@ window.handleNotificationData = function (data) {
         alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}`);
         alert(`STA NameSpace: ${stateTagApp.namespace}`);
         console.log(data);
-        // Route or fetch logic can go here
+        // You can route or fetch here instead of alert
     }, 300);
 };
 
-// Register service worker
+// SW registration + cold-start data parsing
 window.addEventListener('load', async () => {
     console.log('🧠 window.load fired');
 
@@ -99,26 +99,24 @@ window.addEventListener('load', async () => {
             const newSW = reg.installing;
             newSW?.addEventListener('statechange', () => {
                 if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('📦 New SW installed and ready. Reload manually if needed.');
-                    // Don't reload automatically
-                    // Consider notifying user
+                    console.log('📦 New SW installed. Manual reload required if needed.');
                 }
             });
         });
-
-        // Handle ?data= payload (notification click when app is opened)
-        const params = new URLSearchParams(window.location.search);
-        const raw = params.get('data');
-        if (raw) {
-            try {
-                const data = JSON.parse(decodeURIComponent(raw));
-                console.log('🔗 URL-based push data:', data);
-                handleNotificationData(data);
-            } catch (e) {
-                console.warn('❌ Failed to parse push data:', e);
-            }
-        }
     } catch (err) {
         console.error('❌ SW registration failed:', err);
+    }
+
+    // ✅ Cold-start fallback: process push data from URL
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('data');
+    if (raw) {
+        try {
+            const data = JSON.parse(decodeURIComponent(raw));
+            console.log('🔗 URL-based push data:', data);
+            handleNotificationData(data);
+        } catch (e) {
+            console.warn('❌ Failed to parse push data:', e);
+        }
     }
 });

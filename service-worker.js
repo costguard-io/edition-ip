@@ -35,17 +35,19 @@ self.addEventListener('notificationclick', event => {
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientsArr => {
             const existing = clientsArr.find(c => c.url.includes('/') && 'focus' in c);
             if (existing) {
+                console.log('📨 Sending push data via postMessage to open client');
                 existing.postMessage({ type: 'notification-click', data });
                 return existing.focus();
             } else {
                 const encoded = encodeURIComponent(JSON.stringify(data));
+                console.log('🪟 Opening new tab with push data:', encoded);
                 return clients.openWindow(`/?data=${encoded}`);
             }
         })
     );
 });
 
-const CACHE_NAME = 'cg-static-v3.7.24';
+const CACHE_NAME = 'cg-static-v3.7.25';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
@@ -64,23 +66,22 @@ const PRECACHE_URLS = [
     '/manifest.json'
 ];
 
-console.log('🔥 SW loaded: version 3.7.24');
+console.log('🔥 SW loaded: version 3.7.25');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');
     event.waitUntil(
-        caches.open(CACHE_NAME).then(async cache => {
-            const results = await Promise.allSettled(
+        caches.open(CACHE_NAME).then(cache => {
+            return Promise.allSettled(
                 PRECACHE_URLS.map(url => cache.add(url))
-            );
-
-            results.forEach((result, i) => {
-                if (result.status === 'rejected') {
-                    console.warn(`⚠️ Failed to cache: ${PRECACHE_URLS[i]}`, result.reason);
-                }
+            ).then(results => {
+                results.forEach((result, i) => {
+                    if (result.status === 'rejected') {
+                        console.warn(`⚠️ Failed to cache: ${PRECACHE_URLS[i]}`, result.reason);
+                    }
+                });
+                return self.skipWaiting();
             });
-
-            self.skipWaiting();
         })
     );
 });
@@ -89,8 +90,10 @@ self.addEventListener('activate', event => {
     console.log('🚀 Activated');
     event.waitUntil(
         caches.keys().then(keys =>
-            Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-        ).then(() => self.clients.claim())
+            Promise.all(
+                keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+            ).then(() => self.clients.claim())
+        )
     );
 });
 
