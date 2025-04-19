@@ -1,6 +1,6 @@
 stateTagApp['state'] = {
     sta: {}, //required & reserved
-    ai: 0,
+
     rolex: null,
     epoch: {
         mode: ['date', 'range'][0],
@@ -16,8 +16,7 @@ stateTagApp['state'] = {
             filters: 'Filters',
             search: 'Search',
             submit: 'Submit',
-        },
-        numberFormat: '#,###.##'
+        }
     },
     currencies: {
         selected: 'USD',
