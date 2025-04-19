@@ -1,6 +1,4 @@
-const SW_FILE = '/service-worker.v1.3.37.js';
 const VAPID_KEY = 'BAwmsOG6_r388MZNXTrkXm39s7vK9EMFKA9ev8xKaMjaSfceNKbrOfufSomRABKGF6eoBZrCVIjzwtpWtmbauGM';
-
 const firebaseConfig = {
     apiKey: "AIzaSyAdxJQfsIspb5sdPeVMQ5Zu_5X3GjDBTYg",
     authDomain: "costguard.firebaseapp.com",
@@ -15,7 +13,27 @@ if (!firebase.apps.length) {
 }
 const messaging = firebase.messaging();
 
-window.registerPushDevice = async function(token) {
+// React to Service Worker postMessage
+navigator.serviceWorker.addEventListener('message', event => {
+    const {type, msg, data} = event.data || {};
+    if (type === 'sw-log') console.log('[FROM SW]', msg, data);
+    if (type === 'notification-click') handleNotificationData(data);
+});
+
+// Handle notification hash on initial load
+window.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#notification=')) {
+        try {
+            const data = JSON.parse(decodeURIComponent(hash.split('=')[1]));
+            handleNotificationData(data);
+        } catch (e) {
+            console.error('Invalid hash payload', e);
+        }
+    }
+});
+
+async function registerPushDevice(token) {
     try {
         console.log('[registerPushDevice] JWT:', token);
 
@@ -46,6 +64,7 @@ window.registerPushDevice = async function(token) {
 
         console.log('[registerPushDevice] device:', device);
 
+        // Send to your backend
         await fetch('/api/device/register', {
             method: 'POST',
             headers: {
@@ -56,53 +75,13 @@ window.registerPushDevice = async function(token) {
         });
 
         return device;
+
     } catch (err) {
         console.error('[registerPushDevice] Error:', err);
         return null;
     }
 };
 
-navigator.serviceWorker.addEventListener('message', event => {
-    const { type, data } = event.data || {};
-    if (type === 'sw-log') console.log('[FROM SW]', data);
-    if (type === 'notification-click') handleNotificationData(data);
-});
-
 window.handleNotificationData = function (data) {
     console.log('✅ Notification data:', data);
 };
-
-window.addEventListener('load', async () => {
-    try {
-        const reg = await navigator.serviceWorker.register(SW_FILE, { scope: '/' });
-        console.log('✅ SW registered:', reg.scope);
-
-        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-
-        reg.addEventListener('updatefound', () => {
-            const newSW = reg.installing;
-            newSW?.addEventListener('statechange', () => {
-                if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('📦 New SW installed, pending activation');
-                }
-            });
-        });
-
-        const trySkip = () => reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
-        window.addEventListener('beforeunload', trySkip);
-        window.addEventListener('pagehide', trySkip);
-
-        const params = new URLSearchParams(window.location.search);
-        const raw = params.get('data');
-        if (raw) {
-            try {
-                const data = JSON.parse(decodeURIComponent(raw));
-                handleNotificationData(data);
-            } catch (e) {
-                console.warn('Invalid push data in query param', e);
-            }
-        }
-    } catch (err) {
-        console.error('❌ SW registration failed:', err);
-    }
-});
