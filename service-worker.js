@@ -45,7 +45,7 @@ self.addEventListener('notificationclick', event => {
     );
 });
 
-const CACHE_NAME = 'cg-static-v3.7.23';
+const CACHE_NAME = 'cg-static-v3.7.24';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
@@ -64,14 +64,24 @@ const PRECACHE_URLS = [
     '/manifest.json'
 ];
 
-console.log('🔥 SW loaded: version 3.7.23');
+console.log('🔥 SW loaded: version 3.7.24');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(PRECACHE_URLS))
-            .then(() => self.skipWaiting())
+        caches.open(CACHE_NAME).then(async cache => {
+            const results = await Promise.allSettled(
+                PRECACHE_URLS.map(url => cache.add(url))
+            );
+
+            results.forEach((result, i) => {
+                if (result.status === 'rejected') {
+                    console.warn(`⚠️ Failed to cache: ${PRECACHE_URLS[i]}`, result.reason);
+                }
+            });
+
+            self.skipWaiting();
+        })
     );
 });
 

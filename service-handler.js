@@ -16,7 +16,7 @@ if (!firebase.apps.length) {
 const messaging = firebase.messaging();
 
 // Register device with token
-window.registerPushDevice = async function(token) {
+window.registerPushDevice = async function (token) {
     try {
         console.log('[registerPushDevice] JWT:', token);
 
@@ -33,8 +33,10 @@ window.registerPushDevice = async function(token) {
 
         const device = {
             token: fcmToken,
-            platform: /android/i.test(navigator.userAgent) ? 'android'
-                : /iphone|ipad|ipod/i.test(navigator.userAgent) ? 'ios'
+            platform: /android/i.test(navigator.userAgent)
+                ? 'android'
+                : /iphone|ipad|ipod/i.test(navigator.userAgent)
+                    ? 'ios'
                     : 'web',
             agent: navigator.userAgent
         };
@@ -68,7 +70,10 @@ messaging.onMessage(payload => {
 navigator.serviceWorker.addEventListener('message', event => {
     const { type, data } = event.data || {};
     if (type === 'sw-log') console.log('[FROM SW]', data);
-    if (type === 'notification-click') handleNotificationData(data);
+    if (type === 'notification-click') {
+        console.log('✅ Notification click received in main thread');
+        handleNotificationData(data);
+    }
 });
 
 // Shared handler
@@ -78,7 +83,7 @@ window.handleNotificationData = function (data) {
         alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}`);
         alert(`STA NameSpace: ${stateTagApp.namespace}`);
         console.log(data);
-        // You can route or fetch here instead of alert
+        // Route or fetch logic can go here
     }, 300);
 };
 
@@ -90,29 +95,24 @@ window.addEventListener('load', async () => {
         const reg = await navigator.serviceWorker.register(SW_FILE, { scope: '/' });
         console.log('✅ SW registered:', reg.scope);
 
-        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-
         reg.addEventListener('updatefound', () => {
             const newSW = reg.installing;
             newSW?.addEventListener('statechange', () => {
                 if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('📦 New SW installed, reloading...');
-                    newSW.postMessage({ type: 'SKIP_WAITING' });
-                    window.location.reload();
+                    console.log('📦 New SW installed and ready. Reload manually if needed.');
+                    // Don't reload automatically
+                    // Consider notifying user
                 }
             });
         });
 
-        const trySkip = () => reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
-        window.addEventListener('beforeunload', trySkip);
-        window.addEventListener('pagehide', trySkip);
-
-        // Handle ?data= payload
+        // Handle ?data= payload (notification click when app is opened)
         const params = new URLSearchParams(window.location.search);
         const raw = params.get('data');
         if (raw) {
             try {
                 const data = JSON.parse(decodeURIComponent(raw));
+                console.log('🔗 URL-based push data:', data);
                 handleNotificationData(data);
             } catch (e) {
                 console.warn('❌ Failed to parse push data:', e);
