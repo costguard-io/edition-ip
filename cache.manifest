@@ -1,15 +1,15 @@
 CACHE MANIFEST
-# costguard-v7.8.16
+# costguard-v7.8.17
 
 CACHE:
 index.html
 manifest.json
 
-/favicon/apple-touch-icon.png
-/favicon/favicon.ico
-/favicon/icon-192.png
-/favicon/icon-512.png
-/favicon/icon-maskable.png
+//favicon.costguard.io/apple-touch-icon.png
+//favicon.costguard.io/favicon.ico
+//favicon.costguard.io/icon-192.png
+//favicon.costguard.io/icon-512.png
+//favicon.costguard.io/icon-maskable.png
 
 /css/custom.css
 /css/cutestrap.css
