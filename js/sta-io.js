@@ -1,4 +1,20 @@
 stateTagApp["commands"] = {
+    openCamera: function () {
+        if(stateTagApp.$read('project.status') !== 'active'){
+            alert(stateTagApp.$translate('instructions.project-rendering'));
+            return;
+        }
+
+        stateTagApp.$write('camera.currency', true);
+        stateTagApp.$write(
+            'nav.camera',
+            endPoints.receipts.store.replace(
+                '{project}',
+                stateTagApp.$read('project.id')
+            )
+        );
+    },
+
     setEventContext: function (context) {
         stateTagApp.$write('sta.context', context);
         return stateTagApp.$read('sta.context');
@@ -37,17 +53,17 @@ stateTagApp["commands"] = {
         this.clear('user');
         let header = 'login';
         let body = '<x-login></x-login>';
-        this.showModal(header, body, {x:false});
+        this.showModal(header, body, {x: false});
     },
 
-    showPasswordReset: function (){
+    showPasswordReset: function () {
         this.clear('user');
         let header = 'password-reset';
         let body = '<x-password-reset></x-password-reset>';
         this.showModal(header, body);
     },
 
-    showPasswordSet: function (){
+    showPasswordSet: function () {
 
         let header = 'password-set';
         let body = '<x-password-set></x-password-set>';
@@ -85,7 +101,7 @@ function receiveStateTagAppBroadcast(message) {
         //stateTagApp.$write('user.token', '');
     }
 
-    if (staMessage.event === 'stripe-required'){
+    if (staMessage.event === 'stripe-required') {
 
     }
 

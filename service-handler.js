@@ -75,10 +75,7 @@ navigator.serviceWorker.addEventListener('message', event => {
 window.handleNotificationData = function (data) {
     console.log('✅ handleNotificationData triggered with:', data);
     setTimeout(() => {
-        alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}`);
-        alert(`STA NameSpace: ${stateTagApp.namespace}`);
-        console.log(data);
-        // You can route or fetch here instead of alert
+        stateTagApp.$read('notifications').push(data);
     }, 300);
 };
 

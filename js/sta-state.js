@@ -1,6 +1,11 @@
 stateTagApp['state'] = {
     sta: {}, //required & reserved
-    ai: 0,
+    notifications: [],
+    ai: {
+        activated: 0,
+        model: null,
+        id: null
+    },
     rolex: null,
     epoch: {
         mode: ['date', 'range'][0],
@@ -137,6 +142,7 @@ stateTagApp['state'] = {
 };
 
 function initGlobalStateWatchers(stateObserver) {
+    let notificationQueueInterval = null;
 
     stateObserver.watch(
         function (state) {
@@ -230,6 +236,33 @@ function initGlobalStateWatchers(stateObserver) {
         },
         function (fresh, stale) {
             stateTagApp.$write('user.lang', fresh);
+        }
+    );
+
+    stateObserver.watch(
+        state => state.notifications,
+        (fresh, stale) => {
+            if (!notificationQueueInterval) {
+                notificationQueueInterval = setInterval(() => {
+                    // Only process when AI is free
+                    if (!stateTagApp.$read('ai.model') && !stateTagApp.$read('ai.id')) {
+                        const queue = stateTagApp.$read('notifications');
+                        if (queue.length > 0) {
+                            const next = queue[0];
+                            // Hand off to AI state
+                            stateTagApp.$write('ai.model', next.model);
+                            stateTagApp.$write('ai.id', next.id);
+                            // Remove processed notification
+                            stateTagApp.$write('notifications', queue.slice(1));
+                        }
+                    }
+                    // If queue empty, stop the interval
+                    if (stateTagApp.$read('notifications').length === 0) {
+                        clearInterval(notificationQueueInterval);
+                        notificationQueueInterval = null;
+                    }
+                }, 1000);
+            }
         }
     );
 }
