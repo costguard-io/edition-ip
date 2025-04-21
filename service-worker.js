@@ -12,6 +12,24 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// ——— Force every incoming push to show a native notification ———
+self.addEventListener('push', event => {
+    event.waitUntil((async () => {
+        const payload = event.data?.json() || {};
+        const { title, body, icon } = payload.notification || {};
+        const data = payload.data || {};
+
+        await self.registration.showNotification(
+            title  || 'Notification',
+            {
+                body,
+                icon: icon || '//favicon.costguard.io/icon-192.png',
+                data
+            }
+        );
+    })());
+});
+
 messaging.onBackgroundMessage(payload => {
     console.log('📬 Firebase BG Message:', payload);
 
@@ -45,7 +63,7 @@ self.addEventListener('notificationclick', event => {
     );
 });
 
-const CACHE_NAME = 'cg-static-v7.8.25';
+const CACHE_NAME = 'cg-static-v7.8.26';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
@@ -64,7 +82,7 @@ const PRECACHE_URLS = [
     '/manifest.json'
 ];
 
-console.log('🔥 SW loaded: version 7.8.25');
+console.log('🔥 SW loaded: version 7.8.26');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');
