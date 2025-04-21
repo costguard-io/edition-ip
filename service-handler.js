@@ -61,6 +61,22 @@ window.registerPushDevice = async function(token) {
 messaging.onMessage(payload => {
     console.log('📥 Foreground push received:', payload);
     const data = payload.data || {};
+
+
+    // Show native system notification even when app is in focus
+    if (Notification.permission === 'granted') {
+        navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification(
+                payload.notification?.title || 'Notification',
+                {
+                    body:    payload.notification?.body,
+                    icon:    payload.notification?.icon,
+                    data
+                }
+            );
+        });
+    }
+
     handleNotificationData(data);
 });
 
