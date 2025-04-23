@@ -16,7 +16,7 @@ if (!firebase.apps.length) {
 const messaging = firebase.messaging();
 
 // Register device with token
-window.registerPushDevice = async function(token) {
+const registerPushDevice = async function (token) {
     try {
         console.log('[registerPushDevice] JWT:', token);
 
@@ -41,7 +41,10 @@ window.registerPushDevice = async function(token) {
 
         console.log('[registerPushDevice] device:', device);
 
-        await fetch('/api/device/register', {
+        let url = stateTagApp.api.concat('/')
+            .concat(endPoints.member.device);
+
+        await fetch(url, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,

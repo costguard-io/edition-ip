@@ -20,7 +20,7 @@ messaging.onBackgroundMessage(payload => {
 
     self.registration.showNotification(title || 'Notification', {
         body,
-        icon: icon || '//favicon.costguard.io/icon-192.png',
+        icon: '/favicon/icon-192.png',
         data
     });
 });
@@ -45,7 +45,7 @@ self.addEventListener('notificationclick', event => {
     );
 });
 
-const CACHE_NAME = 'cg-static-v7.8.34';
+const CACHE_NAME = 'cg-static-v7.8.35';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
@@ -58,13 +58,13 @@ const PRECACHE_URLS = [
     '/js/sta-socket.js',
     '/js/sta-state.js',
     '/js/stripe.js',
-    '//favicon.costguard.io/favicon.ico',
-    '//favicon.costguard.io/icon-192.png',
-    '//favicon.costguard.io/icon-512.png',
+    '/favicon/favicon.ico',
+    '/favicon/icon-192.png',
+    '/favicon/icon-512.png',
     '/manifest.json'
 ];
 
-console.log('🔥 SW loaded: version 7.8.34');
+console.log('🔥 SW loaded: version 7.8.35');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');
