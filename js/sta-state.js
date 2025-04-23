@@ -9,7 +9,7 @@ stateTagApp['state'] = {
     rolex: null,
     epoch: {
         mode: ['date', 'range'][0],
-        start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+        start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // 1 year ago
         end: new Date() // today
     },
     langpack: {
