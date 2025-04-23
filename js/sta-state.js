@@ -1,5 +1,11 @@
 stateTagApp['state'] = {
-    sta: {}, //required & reserved
+    sta: {
+        undo: {
+            delay: 5,
+            timeoutId: null,
+            reject: null
+        }
+    },
     notifications: [],
     ai: {
         activated: 0,

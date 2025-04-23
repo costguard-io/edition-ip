@@ -65,9 +65,9 @@ messaging.onMessage(payload => {
     // ✅ Show system notification in foreground too
     if (Notification.permission === 'granted') {
         navigator.serviceWorker.getRegistration().then(reg => {
-            reg?.showNotification(title || 'Notification', {
-                body,
-                icon: icon || '//favicon.costguard.io/icon-192.png',
+            reg?.showNotification(data.title || 'Notification', {
+                body: data.body,
+                icon: '//favicon.costguard.io/icon-192.png',
                 data
             });
         });
