@@ -45,7 +45,7 @@ self.addEventListener('notificationclick', event => {
     );
 });
 
-const CACHE_NAME = 'cg-static-v7.8.32';
+const CACHE_NAME = 'cg-static-v7.8.33';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
@@ -64,7 +64,7 @@ const PRECACHE_URLS = [
     '/manifest.json'
 ];
 
-console.log('🔥 SW loaded: version 7.8.32');
+console.log('🔥 SW loaded: version 7.8.33');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');
@@ -84,12 +84,12 @@ self.addEventListener('activate', event => {
     );
 });
 
-// self.addEventListener('fetch', event => {
-//     if (event.request.method !== 'GET') return;
-//     event.respondWith(
-//         caches.match(event.request).then(res => res || fetch(event.request))
-//     );
-// });
+self.addEventListener('fetch', event => {
+    if (event.request.method !== 'GET') return;
+    event.respondWith(
+        caches.match(event.request).then(res => res || fetch(event.request))
+    );
+});
 
 self.addEventListener('message', event => {
     if (event.data?.type === 'SKIP_WAITING') {
