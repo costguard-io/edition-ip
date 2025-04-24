@@ -25,6 +25,9 @@
 
     <style>
 
+        small {
+            font-size: 0.6em !important;
+        }
 
         #top-right-language-selector {
             position: absolute;
@@ -161,6 +164,11 @@
             font-weight: 100;
         }
 
+        .requirements {
+            color: white;
+            font-size: 0.75rem;
+        }
+
     </style>
 </head>
 <body>
@@ -179,7 +187,7 @@
 
 
         <!-- Common header (not part of the language pack) -->
-        <h1 class="text-center mt-4">CostGuard v7.8.40</h1>
+        <h1 class="text-center mt-4">CostGuard v7.8.41</h1>
 
         <!-- Translatable content using data-label attributes for all languages -->
 
@@ -476,8 +484,105 @@
     </div>
 
     <div class="d-flex flex-column gap-2 text-center mt-4">
-        <button class="btn btn-primary" id="install-btn-android">Install on Android</button>
-        <button class="btn btn-secondary" id="install-btn-ios">Install on iOS</button>
+        <button class="btn btn-primary" id="install-btn-android">Android</button>
+        <button class="btn btn-secondary" id="install-btn-ios">
+            iOS<br/>
+            <small class="requirements"
+                   data-label-af="Vereis iOS 18.4 of later."
+                   data-label-sq="Kërkon iOS 18.4 ose më të vonë."
+                   data-label-am="ያስፈልጋል iOS 18.4 ወይም በኋላ።"
+                   data-label-ar="يتطلب iOS 18.4 أو أحدث."
+                   data-label-hy="Պահանջում է iOS 18.4 կամ ավելի  ուշ։"
+                   data-label-az="Tələb edir iOS 18.4 və vəya daha yenisini."
+                   data-label-eu="Exijitzen du iOS 18.4 edo berriro."
+                   data-label-be="Патрабуецца iOS 18.4 або больш позняй версіі."
+                   data-label-bn="iOS 18.4 বা পরের সংস্করণ প্রয়োজন।"
+                   data-label-bs="Zahtijeva iOS 18.4 ili noviji."
+                   data-label-bg="Изисква iOS 18.4 или по-нова версия."
+                   data-label-my="iOS 18.4 သို့မဟုတ် နောက်ထပ် ဗားရှင်း လိုအပ်သည်။"
+                   data-label-ca="Requereix iOS 18.4 o posterior."
+                   data-label-ny="Zimafuna iOS 18.4 kapena kenako."
+                   data-label-zh="需要 iOS 18.4 或 更高版本。"
+                   data-label-hr="Zahtijeva iOS 18.4 ili noviji."
+                   data-label-cs="Vyžaduje iOS 18.4 nebo novější."
+                   data-label-da="Kræver iOS 18.4 eller nyere."
+                   data-label-nl="Vereist iOS 18.4 of hoger."
+                   data-label-en="Requires iOS 18.4 or later."
+                   data-label-eo="Postulas iOS 18.4 aŭ pli novan."
+                   data-label-et="Nõuab iOS 18.4 või uuemat."
+                   data-label-fi="Vaatii iOS 18.4 tai uudemman."
+                   data-label-fr="Nécessite iOS 18.4 ou version ultérieure."
+                   data-label-ka="პაექით iOS 18.4 ან უფრო ახალ."
+                   data-label-de="Erfordert iOS 18.4 oder höher."
+                   data-label-el="Απαιτεί iOS 18.4 ή νεότερη έκδοση."
+                   data-label-gu="iOS 18.4 અથવા નવતર વર્ષન જરૂરી છે."
+                   data-label-ht="Mande iOS 18.4 oswa pi resan."
+                   data-label-ha="Yana buƙatar iOS 18.4 ko ƙari."
+                   data-label-he="מצריך iOS 18.4 או גרסה חדשה יותר."
+                   data-label-hi="iOS 18.4 या उसके बाद का संस्करण आवश्यक है।"
+                   data-label-hu="iOS 18.4 vagy újabb verzió szükséges."
+                   data-label-is="Krefst iOS 18.4 eða nýrri útgáfu."
+                   data-label-ig="Chọrọ iOS 18.4 ma ọbụghị ohere."
+                   data-label-id="Membutuhkan iOS 18.4 atau lebih baru."
+                   data-label-ga="Éilíonn sé iOS 18.4 nó níos déanaí."
+                   data-label-it="Richiede iOS 18.4 o versione successiva."
+                   data-label-ja="iOS 18.4 以降が必要です。"
+                   data-label-jv="Mbutuhake iOS 18.4 utawa luwih anyar."
+                   data-label-kn="iOS 18.4 ಅಥವಾ ನಂತರದ ಆವೃತ್ತಿ ಅಗತ್ಯವಿದೆ."
+                   data-label-ks="iOS 18.4 یا بعدی ضرورت چھ۔"
+                   data-label-km="តម្រូវឱ្យមាន iOS 18.4 ឬ ចុងក្រោយជាងនេះ។"
+                   data-label-ky="iOS 18.4 же андан кийинки версия талап кылынат."
+                   data-label-ko="iOS 18.4 이상 필요합니다."
+                   data-label-ku="Pêdivî ye ku iOS 18.4 an berdewam be."
+                   data-label-lo="ຕ້ອງການ iOS 18.4 ຫຼື ມີ ລະບົບ ໃໝ່."
+                   data-label-la="Postulat iOS 18.4 vel noviorem."
+                   data-label-lv="Nepieciešams iOS 18.4 vai jaunāka versija."
+                   data-label-lt="Reikalauja iOS 18.4 ar naujesnę versiją."
+                   data-label-mk="Бара iOS 18.4 или поновa верзија."
+                   data-label-mg="Mitaky iOS 18.4 na dika vaovao kokoa."
+                   data-label-ms="Memerlukan iOS 18.4 atau lebih baru."
+                   data-label-ml="iOS 18.4 അല്ലെങ്കിൽ അതിനുശേഷം വർഷൻ ആവശ്യമാണ്."
+                   data-label-mt="Jeħtieġ iOS 18.4 jew aktar tard."
+                   data-label-mr="iOS 18.4 किंवा त्यापुढील आवृत्ती आवश्यक आहे."
+                   data-label-mn="iOS 18.4 эсвэл түүний дараах хувилбар шаардлагатай."
+                   data-label-ne="iOS 18.4 वा सोभन्दा नयाँ आवश्यक छ।"
+                   data-label-nb="Krever iOS 18.4 eller nyere."
+                   data-label-nn="Krev iOS 18.4 eller nyere."
+                   data-label-no="Krever iOS 18.4 eller nyere."
+                   data-label-or="iOS 18.4 କିମ୍ବା ପରେର ଆବଶ୍ୟକତା ଅଛି।"
+                   data-label-om="iOS 18.4 yookin isa boodaa barbaachisa."
+                   data-label-pa="iOS 18.4 ਜਾਂ ਇਸ ਤੋਂ ਬਾਅਦ ਦੀ ਵਰਜਨ ਲੋੜੀਂਦੀ ਹੈ।"
+                   data-label-ps="د iOS 18.4 یا وروستۍ نسخه ته  اړتیا ده."
+                   data-label-fa="نیاز به iOS 18.4 یا بالاتر دارد."
+                   data-label-pl="Wymaga iOS 18.4 lub nowszego."
+                   data-label-pt="Requer iOS 18.4 ou posterior."
+                   data-label-ro="Necesită iOS 18.4 sau o versiune ulterioară."
+                   data-label-ru="Требуется iOS 18.4 или более поздняя версия."
+                   data-label-sr="Захтева iOS 18.4 или новију верзију."
+                   data-label-si="iOS 18.4 හෝ ඊට පසු ප්‍රකාශනයක් අවශ්‍ය වේ."
+                   data-label-sk="Vyžaduje iOS 18.4 alebo novšiu verziu."
+                   data-label-sl="Zahteva iOS 18.4 ali novejšo različico."
+                   data-label-so="Waxay u baahan tahay iOS 18.4 ama ka dambeeya."
+                   data-label-es="Requiere iOS 18.4 o posterior."
+                   data-label-sw="Inahitaji iOS 18.4 au toleo jipya zaidi."
+                   data-label-sv="Kräver iOS 18.4 eller senare."
+                   data-label-tl="Nangangailangan ng iOS 18.4 o mas bago."
+                   data-label-tg="Талаб мекунад iOS 18.4 ё навтар."
+                   data-label-ta="iOS 18.4 அல்லது அதற்குப் பிறகு தேவை."
+                   data-label-te="iOS 18.4 లేదా తర్వాతి వెర్షన్ అవసరం."
+                   data-label-th="ต้องการ iOS 18.4 หรือ ใหม่กว่า."
+                   data-label-tr="iOS 18.4 veya daha sonraki sürüm gerekir."
+                   data-label-uk="Потребує iOS 18.4 або новішої версії."
+                   data-label-ur="iOS 18.4 یا بعد کا ورژن درکار ہے۔"
+                   data-label-uz="iOS 18.4 yoki undan keyingi versiya talab etiladi."
+                   data-label-vi="Yêu cầu iOS 18.4 trở lên."
+                   data-label-cy="Angen iOS 18.4 neu ies hef."
+                   data-label-yo="Nilo iOS 18.4 tabi titun sii."
+                   data-label-zu="Idinga iOS 18.4 noma kamuva.">
+                Requires iOS 18.4 or later.
+            </small>
+
+        </button>
     </div>
 
 </div>
@@ -671,7 +776,7 @@
 
     // Manual iOS instructions button
     document.getElementById('install-btn-ios').addEventListener('click', function () {
-        alert("To install CostGuard on iOS:\n\n1. Tap the Share button in Safari\n2. Select 'Add to Home Screen'\n3. Confirm by tapping 'Add'");
+        alert("To install CostGuard on iOS (requires iOS 18.4 or later):\n\n1. Tap the Share button in Safari\n2. Select 'Add to Home Screen'\n3. Confirm by tapping 'Add'");
     });
 </script>
 
