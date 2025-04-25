@@ -1,6 +1,6 @@
 stateTagApp["commands"] = {
     openCamera: function () {
-        if(stateTagApp.$read('project.status') !== 'active'){
+        if (stateTagApp.$read('project.status') !== 'active') {
             alert(stateTagApp.$translate('instructions.project-rendering'));
             return;
         }
@@ -76,7 +76,13 @@ stateTagApp["commands"] = {
         this.clear('builder.files');
         console.log(stateTagApp.$read('builder.files'))
         this.showModal(header, body, {x: true});
-    }
+    },
+
+    editBudget: function () {
+        let header = 'edit-budget :: ' + stateTagApp.$read('project.currency_code');
+        let body = '<x-input-number locus="project.budget" name="budget" icon="chart-pie" min=0></x-input-number>';
+        this.showModal(header, body);
+    },
 };
 
 function receiveStateTagAppBroadcast(message) {
