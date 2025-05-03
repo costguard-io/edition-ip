@@ -12,22 +12,30 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage(payload => {
+messaging.onBackgroundMessage(async payload => {
     console.log('📬 Firebase BG Message:', payload);
 
-    const { title, body, icon } = payload.notification || {};
     const data = payload.data || {};
+    const notification = payload.notification || {};
 
-    self.registration.showNotification(title || 'Notification', {
+    const title = notification.title || data.title || 'Notification';
+    const body = notification.body || data.body || '';
+    const icon = notification.icon || '/favicon/icon-192.png';
+
+    self.registration.showNotification(title, {
         body,
-        icon: '/favicon/icon-192.png',
+        icon,
         data
+    });
+    // forward background push data to clients
+    const clientsList = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
+    clientsList.forEach(client => {
+        client.postMessage({ type: 'push', data });
     });
 });
 
 self.addEventListener('notificationclick', event => {
     const data = event.notification?.data || {};
-    console.log('🖱️ Notification clicked:', data);
 
     event.notification.close();
 
@@ -45,7 +53,7 @@ self.addEventListener('notificationclick', event => {
     );
 });
 
-const CACHE_NAME = 'cg-static-v7.8.53';
+const CACHE_NAME = 'cg-static-v7.8.54';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
@@ -64,7 +72,7 @@ const PRECACHE_URLS = [
     '/manifest.json'
 ];
 
-console.log('🔥 SW loaded: version 7.8.53');
+console.log('🔥 SW loaded: version 7.8.54');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');
@@ -85,9 +93,13 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    if (event.request.method !== 'GET') return;
+    const req = event.request;
+    // skip polling to socket.io and cross-origin requests
+    if (req.url.includes('/socket.io/')) return;
+    if (!req.url.startsWith(self.location.origin)) return;
+    if (req.method !== 'GET') return;
     event.respondWith(
-        caches.match(event.request).then(res => res || fetch(event.request))
+        caches.match(req).then(res => res || fetch(req))
     );
 });
 

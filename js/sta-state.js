@@ -6,17 +6,19 @@ stateTagApp['state'] = {
             reject: null
         }
     },
-    notifications: [],
     ai: {
-        activated: 0,
-        model: null,
-        id: null
+        activated: 0
+    },
+
+    notification: {
+        model: 'none',
+        id: 0
     },
     rolex: null,
     epoch: {
         mode: ['date', 'range'][0],
-        start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // 1 year ago
-        end: new Date() // today
+        start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), // 1 year ago as YYYY-MM-DD
+        end: new Date().toISOString().slice(0, 10) // today as YYYY-MM-DD
     },
     langpack: {
         options: {
@@ -83,6 +85,7 @@ stateTagApp['state'] = {
         budget: null, // null implies an ongoing project
         error: '',
     },
+    receipt: {},
     receipts: [],
 
     team: [],
@@ -242,33 +245,6 @@ function initGlobalStateWatchers(stateObserver) {
         },
         function (fresh, stale) {
             stateTagApp.$write('user.lang', fresh);
-        }
-    );
-
-    stateObserver.watch(
-        state => state.notifications,
-        (fresh, stale) => {
-            if (!notificationQueueInterval) {
-                notificationQueueInterval = setInterval(() => {
-                    // Only process when AI is free
-                    if (!stateTagApp.$read('ai.model') && !stateTagApp.$read('ai.id')) {
-                        const queue = stateTagApp.$read('notifications');
-                        if (queue.length > 0) {
-                            const next = queue[0];
-                            // Hand off to AI state
-                            stateTagApp.$write('ai.model', next.model);
-                            stateTagApp.$write('ai.id', next.id);
-                            // Remove processed notification
-                            stateTagApp.$write('notifications', queue.slice(1));
-                        }
-                    }
-                    // If queue empty, stop the interval
-                    if (stateTagApp.$read('notifications').length === 0) {
-                        clearInterval(notificationQueueInterval);
-                        notificationQueueInterval = null;
-                    }
-                }, 1000);
-            }
         }
     );
 }

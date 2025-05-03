@@ -15,12 +15,17 @@ if (!firebase.apps.length) {
 }
 const messaging = firebase.messaging();
 
+/**
+ * START SETUP
+ */
 // Register device with token
 const registerPushDevice = async function (token) {
     try {
         console.log('[registerPushDevice] JWT:', token);
+        console.log('🔍 Before requestPermission, current:', Notification.permission);
 
         const permission = await Notification.requestPermission();
+        console.log('✅ requestPermission resolved as:', permission);
         if (permission !== 'granted') return null;
 
         const reg = await navigator.serviceWorker.ready;
@@ -60,62 +65,28 @@ const registerPushDevice = async function (token) {
     }
 };
 
-// Foreground push
-messaging.onMessage(payload => {
-    console.log('📥 Foreground push received:', payload);
-    const data = payload.data || {};
-
-    // ✅ Show system notification in foreground too
-    if (Notification.permission === 'granted') {
-        navigator.serviceWorker.getRegistration().then(reg => {
-            reg?.showNotification(data.title || 'Notification', {
-                body: data.body,
-                icon: '//favicon.costguard.io/icon-192.png',
-                data
-            });
-        });
-    }
-
-    handleNotificationData(data);
-});
-
-// Message from SW (background click)
-navigator.serviceWorker.addEventListener('message', event => {
-    const { type, data } = event.data || {};
-    if (type === 'sw-log') console.log('[FROM SW]', data);
-    if (type === 'notification-click') handleNotificationData(data);
-});
-
-// Shared handler
-window.handleNotificationData = function (data) {
-    console.log('✅ handleNotificationData triggered with:', data);
-    setTimeout(() => {
-        stateTagApp.$read('notifications').push(data);
-    }, 300);
-};
-
 // Register service worker
 window.addEventListener('load', async () => {
     console.log('🧠 window.load fired');
 
     try {
-        const reg = await navigator.serviceWorker.register(SW_FILE, { scope: '/' });
+        const reg = await navigator.serviceWorker.register(SW_FILE, {scope: '/'});
         console.log('✅ SW registered:', reg.scope);
 
-        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        if (reg.waiting) reg.waiting.postMessage({type: 'SKIP_WAITING'});
 
         reg.addEventListener('updatefound', () => {
             const newSW = reg.installing;
             newSW?.addEventListener('statechange', () => {
                 if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
                     console.log('📦 New SW installed, reloading...');
-                    newSW.postMessage({ type: 'SKIP_WAITING' });
+                    newSW.postMessage({type: 'SKIP_WAITING'});
                     window.location.reload();
                 }
             });
         });
 
-        const trySkip = () => reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
+        const trySkip = () => reg.waiting?.postMessage({type: 'SKIP_WAITING'});
         window.addEventListener('beforeunload', trySkip);
         window.addEventListener('pagehide', trySkip);
 
@@ -134,3 +105,35 @@ window.addEventListener('load', async () => {
         console.error('❌ SW registration failed:', err);
     }
 });
+/**
+ * END SETUP
+ */
+
+/**
+ * START HANDLING
+ * Handle push notification click event (from Service Worker)
+ * Background: toaster -> click -> handle data
+ * Foreground: toaster & handle data (click is not relevant)
+ */
+
+// Foreground push (no notification toast here, handled by SW)
+messaging.onMessage(payload => {
+    console.log('📥 Push message received:', payload);
+    if(payload.data){
+        handleNotificationData(payload.data);
+    }
+});
+
+// Message from Service Worker (background click)
+navigator.serviceWorker.addEventListener('message', event => {
+    console.log('📥 Backgrond push received:', event);
+
+    if(event.data?.data){
+        handleNotificationData(event.data.data);
+    }
+});
+
+// Shared handler
+window.handleNotificationData = function (data) {
+    stateTagApp.$write('notification', data);
+};

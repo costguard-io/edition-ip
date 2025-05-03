@@ -1,12 +1,75 @@
 :root {
     --bs-primary: #36A2EB; /* Bright Blue (previously secondary) */
-    --bs-secondary: #FF9F40; /* Medium Gray (previously dark) */
+    --bs-secondary: #6c757d; /* Bootstrap Gray */
     --bs-success: #4BC0C0; /* Aqua */
-    --bs-danger: #FF6384; /* Bright Red-Pink (previously primary) */
-    --bs-warning: #FFCE56; /* Soft Yellow */
-    --bs-info: #9966FF; /* Violet */
+    --bs-danger: #c82333; /* Strong Red (less pink) */
+    --bs-warning: #f39c12; /* Deeper Amber */
+    --bs-info: #17a2b8; /* Teal (Bootstrap's original info color) */
     --bs-light: #F0F0F0; /* Light Gray */
     --bs-dark: #606060; /* Vibrant Orange (previously danger) */
     --bs-white: #fefefe; /* White */
     --bs-black: #000000; /* Black */
+
+   /* --bs-edit: #abcdef;
+    --bs-edit-dark: #17a2b8;*/
+
+    --bs-excessive: #ffd700;  /*Bright Red for Excessive */
+    --bs-irrelevant: #ff8c00;  /*Gray for Irrelevant */
+    --bs-duplicate: #d50000; /* Orange for Duplicate */
+
+}
+
+/*!** FEATURES **!
+.btn-edit {
+    background-color: var(--bs-edit);
+    color: #fff;
+    border: none;
+}
+.btn-outline-edit {
+    background-color: transparent !important;
+    border-color: var(--bs-edit-dark) !important;
+    color: var(--bs-edit-dark) !important;
+}*/
+
+/** FLAGS **/
+.btn-excessive {
+    background-color: var(--bs-excessive);
+    color: #fff;
+    border: none;
+}
+
+.text-excessive {
+    color: var(--bs-excessive);
+}
+
+.bg-excessive {
+    background-color: var(--bs-excessive) !important;
+}
+
+.btn-irrelevant {
+    background-color: var(--bs-irrelevant);
+    color: #fff;
+    border: none;
+}
+
+.text-irrelevant {
+    color: var(--bs-irrelevant);
+}
+
+.bg-irrelevant {
+    background-color: var(--bs-irrelevant) !important;
+}
+
+.btn-duplicate {
+    background-color: var(--bs-duplicate);
+    color: #fff;
+    border: none;
+}
+
+.text-duplicate {
+    color: var(--bs-duplicate);
+}
+
+.bg-duplicate {
+    background-color: var(--bs-duplicate) !important;
 }

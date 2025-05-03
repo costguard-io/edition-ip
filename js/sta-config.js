@@ -14,21 +14,21 @@ stateTagApp = {
         .concat('/#/'),
 
     api: {
-        production: "https://api.CostGuard.io",
-        ngrok: "https://esb.costguard.io",
-        development: "http://api.CostGuard.test"
+        ip: "https://api.CostGuard.io",
+        uiux: "https://esb.costguard.io",
+        localhost: "http://api.CostGuard.test"
     },
 
     socket: {
-        production: "https://api.costguard.io:3000",
-        ngrok: "https://echo.costguard.io:3000",
-        development: "http://api.costguard.test:3000"
+        ip: "https://api.costguard.io:3000",
+        uiux: "https://echo.costguard.io:3000",
+        localhost: "http://api.costguard.test:3000"
     },
 
     nebula: {
-        production: "https://json-data.io:8080",
-        ngrok: "https://json-data.io:8080",
-        development: "http://json-data.io:8181"
+        ip: "https://json-data.io:8080",
+        uiux: "https://json-data.io:8080",
+        localhost: "http://json-data.io:8181"
     },
 
     palette: {
