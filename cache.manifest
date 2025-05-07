@@ -1,8 +1,9 @@
 CACHE MANIFEST
-# costguard-v9.7.29
+# costguard-v9.7.30
 
 CACHE:
 index.html
+splash.png
 manifest.json
 
 //favicon.costguard.io/apple-touch-icon.png
