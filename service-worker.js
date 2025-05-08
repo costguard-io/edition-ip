@@ -53,11 +53,19 @@ self.addEventListener('notificationclick', event => {
     );
 });
 
-const CACHE_NAME = 'cg-static-v9.7.30';
+const CACHE_NAME = 'cg-static-v9.7.31';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
-    '/splash.png',
+    '/splash-screens/apple-splash-750x1334-portrait.jpg',
+    '/splash-screens/apple-splash-828x1792-portrait.jpg',
+    '/splash-screens/apple-splash-1125x2436-portrait.jpg',
+    '/splash-screens/apple-splash-1170x2532-portrait.jpg',
+    '/splash-screens/apple-splash-1179x2556-portrait.jpg',
+    '/splash-screens/apple-splash-1242x2208-portrait.jpg',
+    '/splash-screens/apple-splash-1242x2688-portrait.jpg',
+    '/splash-screens/apple-splash-1284x2778-portrait.jpg',
+    '/splash-screens/apple-splash-1290x2796-portrait.jpg',
     '/css/custom.css',
     '/js/app.js',
     '/js/sta-api.js',
@@ -73,7 +81,7 @@ const PRECACHE_URLS = [
     '/manifest.json'
 ];
 
-console.log('🔥 SW loaded: version 9.7.30');
+console.log('🔥 SW loaded: version 9.7.31');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');
@@ -100,7 +108,9 @@ self.addEventListener('fetch', event => {
     if (!req.url.startsWith(self.location.origin)) return;
     if (req.method !== 'GET') return;
     event.respondWith(
-        caches.match(req).then(res => res || fetch(req))
+        caches.match(req, { ignoreSearch: true }).then(res => {
+            return res || fetch(req);
+        })
     );
 });
 
