@@ -12,8 +12,17 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage(async payload => {
-    console.log('📬 Firebase BG Message:', payload);
+messaging.onBackgroundMessage(payload => {
+    console.log('📬 Background push received:', payload);
+
+    /*const { title, body, icon } = payload.notification || {};
+    const data = payload.data || {};
+
+    self.registration.showNotification(title || 'Notification', {
+        body,
+        icon: icon || '/favicon/icon-192.png',
+        data
+    });*/
 
     const data = payload.data || {};
     const notification = payload.notification || {};
@@ -27,15 +36,11 @@ messaging.onBackgroundMessage(async payload => {
         icon,
         data
     });
-    // forward background push data to clients
-    const clientsList = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
-    clientsList.forEach(client => {
-        client.postMessage({ type: 'push', data });
-    });
 });
 
 self.addEventListener('notificationclick', event => {
     const data = event.notification?.data || {};
+    console.log('🖱️ Notification clicked:', data);
 
     event.notification.close();
 
@@ -53,19 +58,10 @@ self.addEventListener('notificationclick', event => {
     );
 });
 
-const CACHE_NAME = 'cg-static-v9.7.31';
+const CACHE_NAME = 'cg-static-v1.3.48';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
-    '/splash-screens/apple-splash-750x1334-portrait.jpg',
-    '/splash-screens/apple-splash-828x1792-portrait.jpg',
-    '/splash-screens/apple-splash-1125x2436-portrait.jpg',
-    '/splash-screens/apple-splash-1170x2532-portrait.jpg',
-    '/splash-screens/apple-splash-1179x2556-portrait.jpg',
-    '/splash-screens/apple-splash-1242x2208-portrait.jpg',
-    '/splash-screens/apple-splash-1242x2688-portrait.jpg',
-    '/splash-screens/apple-splash-1284x2778-portrait.jpg',
-    '/splash-screens/apple-splash-1290x2796-portrait.jpg',
     '/css/custom.css',
     '/js/app.js',
     '/js/sta-api.js',
@@ -81,7 +77,7 @@ const PRECACHE_URLS = [
     '/manifest.json'
 ];
 
-console.log('🔥 SW loaded: version 9.7.31');
+console.log('🔥 SW loaded: version 1.3.48');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');
@@ -102,15 +98,9 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    const req = event.request;
-    // skip polling to socket.io and cross-origin requests
-    if (req.url.includes('/socket.io/')) return;
-    if (!req.url.startsWith(self.location.origin)) return;
-    if (req.method !== 'GET') return;
+    if (event.request.method !== 'GET') return;
     event.respondWith(
-        caches.match(req, { ignoreSearch: true }).then(res => {
-            return res || fetch(req);
-        })
+        caches.match(event.request).then(res => res || fetch(event.request))
     );
 });
 
