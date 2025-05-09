@@ -45,10 +45,10 @@ self.addEventListener('notificationclick', event => {
     event.notification.close();
 
     event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientsArr => {
+        clients.matchAll({type: 'window', includeUncontrolled: true}).then(clientsArr => {
             const existing = clientsArr.find(c => c.url.includes('/') && 'focus' in c);
             if (existing) {
-                existing.postMessage({ type: 'notification-click', data });
+                existing.postMessage({type: 'notification-click', data});
                 return existing.focus();
             } else {
                 const encoded = encodeURIComponent(JSON.stringify(data));
@@ -61,9 +61,20 @@ self.addEventListener('notificationclick', event => {
 const CACHE_NAME = 'cg-static-v1.3.48';
 const PRECACHE_URLS = [
     '/',
+    '/apple-splash-750x1334-portrait.jpg',
+    '/apple-splash-828x1792-portrait.jpg',
+    '/apple-splash-1125x2436-portrait.jpg',
+    '/apple-splash-1170x2532-portrait.jpg',
+    '/apple-splash-1179x2556-portrait.jpg',
+    '/apple-splash-1242x2208-portrait.jpg',
+    '/apple-splash-1242x2688-portrait.jpg',
+    '/apple-splash-1284x2778-portrait.jpg',
+    '/apple-splash-1290x2796-portrait.jpg',
     '/index.html',
+    '/service-handlers.js',
     '/css/custom.css',
-    '/js/app.js',
+    '/css/cutestrap.css',
+    '/css/strapon.css',
     '/js/sta-api.js',
     '/js/sta-config.js',
     '/js/sta-io.js',
@@ -74,6 +85,8 @@ const PRECACHE_URLS = [
     '/favicon/favicon.ico',
     '/favicon/icon-192.png',
     '/favicon/icon-512.png',
+    '/favicon/icon-maskable.png',
+    '/favicon/apple-touch-icon.png',
     '/manifest.json'
 ];
 

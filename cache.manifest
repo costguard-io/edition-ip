@@ -1,28 +1,27 @@
 CACHE MANIFEST
-# costguard-v9.7.32
+# costguard-v9.7.33
 
 CACHE:
-index.html
-splash-screens/apple-splash-750x1334-portrait.jpg
-splash-screens/apple-splash-828x1792-portrait.jpg
-splash-screens/apple-splash-1125x2436-portrait.jpg
-splash-screens/apple-splash-1170x2532-portrait.jpg
-splash-screens/apple-splash-1179x2556-portrait.jpg
-splash-screens/apple-splash-1242x2208-portrait.jpg
-splash-screens/apple-splash-1242x2688-portrait.jpg
-splash-screens/apple-splash-1284x2778-portrait.jpg
-splash-screens/apple-splash-1290x2796-portrait.jpg
+/index.html
+/splash-screens/apple-splash-750x1334-portrait.jpg
+/splash-screens/apple-splash-828x1792-portrait.jpg
+/splash-screens/apple-splash-1125x2436-portrait.jpg
+/splash-screens/apple-splash-1170x2532-portrait.jpg
+/splash-screens/apple-splash-1179x2556-portrait.jpg
+/splash-screens/apple-splash-1242x2208-portrait.jpg
+/splash-screens/apple-splash-1242x2688-portrait.jpg
+/splash-screens/apple-splash-1284x2778-portrait.jpg
+/splash-screens/apple-splash-1290x2796-portrait.jpg
 
-//favicon.costguard.io/apple-touch-icon.png
-//favicon.costguard.io/favicon.ico
-//favicon.costguard.io/icon-192.png
-//favicon.costguard.io/icon-512.png
-//favicon.costguard.io/icon-maskable.png
+/favicon/apple-touch-icon.png
+/favicon/favicon.ico
+/favicon/icon-192.png
+/favicon/icon-512.png
+/favicon/icon-maskable.png
 
 /css/custom.css
 /css/cutestrap.css
 
-/js/app.js
 /js/custom.js
 /js/sta-api.js
 /js/sta-config.js
