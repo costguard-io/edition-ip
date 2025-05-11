@@ -58,11 +58,11 @@ window.registerPushDevice = async function(token) {
 };
 
 // Foreground push
-// messaging.onMessage(payload => {
-//     console.log('📥 Foreground push received:', payload);
-//     const data = payload.data || {};
-//     handleNotificationData(data);
-// });
+messaging.onMessage(payload => {
+    console.log('📥 Foreground push received:', payload);
+    const data = payload.data || {};
+    handleNotificationData(data);
+});
 
 // Message from SW (background click)
 navigator.serviceWorker.addEventListener('message', event => {
@@ -73,10 +73,10 @@ navigator.serviceWorker.addEventListener('message', event => {
 
 // Shared handler
 window.handleNotificationData = function (data) {
-    console.log('✅ handleNotificationData triggered from bg-click with:', data);
+    console.log('✅ handleNotificationData triggered with:', data);
     setTimeout(() => {
-        alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}`);
-        alert(`STA NameSpace: ${stateTagApp.namespace}`);
+        alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}\nSTA NameSpace: ${stateTagApp.namespace}`);
+
         console.log(data);
         // You can route or fetch here instead of alert
     }, 300);
@@ -90,8 +90,6 @@ window.addEventListener('load', async () => {
         const reg = await navigator.serviceWorker.register(SW_FILE, { scope: '/' });
         console.log('✅ SW registered:', reg.scope);
 
-        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-
         reg.addEventListener('updatefound', () => {
             const newSW = reg.installing;
             newSW?.addEventListener('statechange', () => {
@@ -102,10 +100,6 @@ window.addEventListener('load', async () => {
                 }
             });
         });
-
-        const trySkip = () => reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
-        window.addEventListener('beforeunload', trySkip);
-        window.addEventListener('pagehide', trySkip);
 
         // Handle ?data= payload
         const params = new URLSearchParams(window.location.search);
