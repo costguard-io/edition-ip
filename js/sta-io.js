@@ -1,7 +1,7 @@
 stateTagApp["commands"] = {
     openCamera: function () {
-        if (stateTagApp.$read('project.status') !== 'active') {
-            alert(stateTagApp.$translate('instructions.project-rendering'));
+        if (stateTagApp.$read('project.status') === 'inactive') {
+            alert(stateTagApp.$translate('instructions.project-inactive'));
             return;
         }
 
