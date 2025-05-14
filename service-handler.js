@@ -75,9 +75,9 @@ navigator.serviceWorker.addEventListener('message', event => {
 window.handleNotificationData = function (data) {
     console.log('✅ handleNotificationData triggered with:', data);
     setTimeout(() => {
-        alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}\nSTA NameSpace: ${stateTagApp.namespace}`);
-
-        console.log(data);
+        //alert(`handleNotificationData\nModel: ${data.model}\nID: ${data.id}\nSTA NameSpace: ${stateTagApp.namespace}`);
+        //console.log(stateTagApp.namespace);
+        stateTagApp.$write('notification', data);
         // You can route or fetch here instead of alert
     }, 300);
 };
