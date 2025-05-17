@@ -1,6 +1,6 @@
 {
-  "name": "CostGuard International Projects Edition v9.7.37",
-  "description": "CostGuard International Projects Edition v9.7.37",
+  "name": "CostGuard International Projects Edition v#BUILD#",
+  "description": "CostGuard International Projects Edition v#BUILD#",
   "short_name": "CostGuard IP",
   "start_url": "/",
   "scope": "/",

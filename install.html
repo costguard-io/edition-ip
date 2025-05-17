@@ -187,7 +187,7 @@
 
 
         <!-- Common header (not part of the language pack) -->
-        <h1 class="text-center mt-4">CostGuard v9.7.37</h1>
+        <h1 class="text-center mt-4">CostGuard v#BUILD#</h1>
 
         <!-- Translatable content using data-label attributes for all languages -->
 
@@ -596,6 +596,17 @@
 </pwa-install>
 
 
+<div id="iosModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center;">
+    <div style="position:relative; max-width: 90vw; max-height: 90vh;">
+        <button onclick="closeIosModal()" style="position:absolute; top:-30px; right:0; background:none; border:none; font-size:2em; color:white;">×</button>
+        <video id="iosVideo" playsinline muted style="width:100%; border-radius:8px; box-shadow:0 0 15px rgba(0,0,0,0.5);">
+            <source src="/install/ios-pwa-install.webm" type="video/webm">
+            <source src="/install/ios-pwa-install.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+</div>
+
 <script>
     const apiUrl = (window.location.hostname.includes('.test') || window.location.hostname.includes('ngrok'))
         ? '//api.costguard.test/api/'
@@ -776,12 +787,28 @@
 
     // Manual iOS instructions button
     document.getElementById('install-btn-ios').addEventListener('click', function () {
-        alert("To install CostGuard on iOS (requires iOS 18.4 or later):\n\n1. Tap the Share button in Safari\n2. Select 'Add to Home Screen'\n3. Confirm by tapping 'Add'");
+        const modal = document.getElementById('iosModal');
+        const iosVideo = document.getElementById('iosVideo');
+        modal.style.display = 'flex';
+        iosVideo.currentTime = 0;
+        iosVideo.play();
+        iosVideo.onended = function () {
+            closeIosModal();
+        };
     });
+
+    function closeIosModal() {
+        const modal = document.getElementById('iosModal');
+        const iosVideo = document.getElementById('iosVideo');
+        iosVideo.pause();
+        modal.style.display = 'none';
+    }
 </script>
 
 <!-- Bootstrap JS -->
 <script src="//cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+
 
 </body>
 </html>
