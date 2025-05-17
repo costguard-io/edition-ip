@@ -119,8 +119,8 @@
 
         .content-area > * {
             width: 100%;
-            max-width: min(100vw, 450px);
-            margin: 0vh auto 0vh auto;
+            max-width: 100%;
+            margin: 0 auto;
         }
 
         /* Wide View */
@@ -170,6 +170,35 @@
         }
 
     </style>
+
+    <style>
+    .ios-play-icon {
+        display: inline-block;
+        width: 45px;
+        height: 45px;
+        line-height: 45px;
+        border-radius: 50%;
+        border: 1px solid white;
+        color: white;
+        font-size: 20px;
+        padding-left: 4px;
+        text-align: center;
+
+
+        margin-bottom: 1em;
+    }
+    </style>
+
+    <style>
+    @keyframes bounceArrow {
+        0%, 100% {
+            transform: translateX(-50%) translateY(0);
+        }
+        50% {
+            transform: translateX(-50%) translateY(-10px);
+        }
+    }
+    </style>
 </head>
 <body>
 
@@ -182,12 +211,12 @@
     <div id="progress-bar"></div>
 </div>
 
-<div class="content-area d-flex flex-column">
+<div class="content-area container d-flex flex-column justify-content-center align-items-center px-3">
     <div class="information text-muted">
 
 
         <!-- Common header (not part of the language pack) -->
-        <h1 class="text-center mt-4">CostGuard v#BUILD#</h1>
+        <h1 class="text-center mt-4">CostGuard v9.7.38</h1>
 
         <!-- Translatable content using data-label attributes for all languages -->
 
@@ -580,14 +609,14 @@
                    data-label-yo="Nilo iOS 18.4 tabi titun sii."
                    data-label-zu="Idinga iOS 18.4 noma kamuva.">
                 Requires iOS 18.4 or later.
-            </small>
+            </small><br><br>
 
+            <span class="ios-play-icon">▶</span><br>
         </button>
     </div>
 
 </div>
 
-<!-- The pwa-install custom element -->
 <pwa-install id="pwa-install"
              manifest-url="/manifest.json"
              manual-apple="true"
@@ -605,6 +634,11 @@
             Your browser does not support the video tag.
         </video>
     </div>
+</div>
+
+<!-- Hidden arrow bounce indicator for iOS install instructions -->
+<div id="arrow-bounce" style="display:none; position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 3.5em; color: white; text-shadow: 0 0 8px rgba(0,0,0,0.8); animation: bounceArrow 1.25s infinite ease-in-out; z-index: 10000; pointer-events: none;">
+  <span style="display:block; transform: rotate(180deg);">⇧</span>
 </div>
 
 <script>
@@ -787,6 +821,9 @@
 
     // Manual iOS instructions button
     document.getElementById('install-btn-ios').addEventListener('click', function () {
+        // Restore main text and Android button in case they were hidden before
+        document.querySelector('.information').style.display = '';
+        document.getElementById('install-btn-android').style.display = '';
         const modal = document.getElementById('iosModal');
         const iosVideo = document.getElementById('iosVideo');
         modal.style.display = 'flex';
@@ -802,6 +839,13 @@
         const iosVideo = document.getElementById('iosVideo');
         iosVideo.pause();
         modal.style.display = 'none';
+        // Hide main text and Android button before showing arrow
+        document.querySelector('.information').style.display = 'none';
+        document.getElementById('install-btn-android').style.display = 'none';
+        document.getElementById('arrow-bounce').style.display = 'block';
+        // Move iOS button up and tighten spacing
+        document.getElementById('install-btn-ios').style.marginTop = '2vh';
+        document.getElementById('install-btn-ios').style.marginBottom = '1vh';
     }
 </script>
 
