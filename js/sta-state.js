@@ -30,6 +30,7 @@ stateTagApp['state'] = {
             search: 'Search',
             submit: 'Submit',
         },
+        numberCurrency: ['receipt', 'project'][0],
         numberFormat: '#,###.##'
     },
     currencies: {
@@ -107,6 +108,7 @@ stateTagApp['state'] = {
         landscape: false,
         endpoint: null,
         currency: false,
+        batch: null,
     },
     microphone: {
         endpoint: null,

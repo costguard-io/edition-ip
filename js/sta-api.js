@@ -54,7 +54,8 @@ const endPoints = {
         list: 'api/projects/{project}/receipts',
         delete: 'api/projects/{project}/receipts/{receipt}',
         update: 'api/projects/{project}/receipts/{receipt}',
-        overwrite: 'api/projects/{project}/receipts/{receipt}'
+        overwrite: 'api/projects/{project}/receipts/{receipt}',
+        batch: 'api/projects/{project}/receipts/batch'
     }
 };
 

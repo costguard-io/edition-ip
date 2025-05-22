@@ -1,3 +1,19 @@
+// --- camera upload queue constants + helper to wipe it ------------
+const CAMERA_DB_NAME      = 'cameraUploads';
+const CAMERA_DB_VERSION   = 1;
+const CAMERA_STORE_QUEUE  = 'queue';
+
+function clearCameraUploadQueue() {
+    const req = indexedDB.open(CAMERA_DB_NAME, CAMERA_DB_VERSION);
+    req.onsuccess = function(e) {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(CAMERA_STORE_QUEUE)) return; // nothing yet
+        const tx = db.transaction(CAMERA_STORE_QUEUE, 'readwrite');
+        tx.objectStore(CAMERA_STORE_QUEUE).clear();
+    };
+    // If db doesn't exist yet or open fails, nothing to clear.
+}
+
 stateTagApp["commands"] = {
     openCamera: function () {
         if (stateTagApp.$read('project.status') === 'inactive') {
@@ -33,7 +49,8 @@ stateTagApp["commands"] = {
     },
 
     reset: function () {
-        stateTagApp.$execute('resetApp')
+        stateTagApp.$execute('resetApp');
+        clearCameraUploadQueue();      // also wipe persisted image queue
     },
 
     showModal: function (header, body, options = {}) {
@@ -79,7 +96,7 @@ stateTagApp["commands"] = {
     },
 
     editBudget: function () {
-        let header = 'edit-budget :: ' + stateTagApp.$read('project.currency_code');
+        let header = stateTagApp.$translate('edit-budget') + ' :: ' + stateTagApp.$read('project.currency_code');
         let body = '<x-input-number locus="project.budget" name="budget" icon="chart-pie" min=0></x-input-number>';
         this.showModal(header, body);
     },

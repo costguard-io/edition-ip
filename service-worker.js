@@ -49,7 +49,7 @@ self.addEventListener('notificationclick', event => {
     );
 });
 
-const CACHE_NAME = 'cg-static-v9.7.40';
+const CACHE_NAME = 'cg-static-v9.7.41';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
@@ -87,7 +87,7 @@ const PRECACHE_URLS = [
     '/manifest.json'
 ];
 
-console.log('🔥 SW loaded: version 9.7.40');
+console.log('🔥 SW loaded: version 9.7.41');
 
 self.addEventListener('install', event => {
     console.log('📦 Installing...');
@@ -107,9 +107,13 @@ self.addEventListener('activate', event => {
     );
 });
 
-self.addEventListener('fetch', event => {
+
+/**
+ * Fetch handler for all requests, use this to cache and serve the files from your server or local file system:
+ */
+/*self.addEventListener('fetch', event => {
     if (event.request.method !== 'GET') return;
     event.respondWith(
         caches.match(event.request).then(res => res || fetch(event.request))
     );
-});
+});*/
