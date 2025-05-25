@@ -142,6 +142,7 @@ stateTagApp['state'] = {
             header: '',
             body: '',
             image: '',
+            images: [],
         },
         options: {
             x: true,
