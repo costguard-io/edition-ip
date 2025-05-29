@@ -179,16 +179,24 @@
         display: inline-block;
         width: 45px;
         height: 45px;
-        line-height: 45px;
         border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.2);
         border: 1px solid white;
-        color: white;
-        font-size: 20px;
-        padding-left: 4px;
-        text-align: center;
-
-
+        position: relative;
         margin-bottom: 1em;
+    }
+
+    .ios-play-icon::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-45%, -50%);
+        width: 0;
+        height: 0;
+        border-top: 8px solid transparent;
+        border-bottom: 8px solid transparent;
+        border-left: 14px solid white;
     }
     </style>
 
@@ -219,7 +227,7 @@
 
 
         <!-- Common header (not part of the language pack) -->
-        <h1 class="text-center mt-4">CostGuard v9.7.54</h1>
+        <h1 class="text-center mt-4">CostGuard v9.7.55</h1>
 
         <!-- Translatable content using data-label attributes for all languages -->
 
@@ -614,7 +622,7 @@
                 Requires iOS 18.4 or later.
             </small><br><br>
 
-            <span class="ios-play-icon">▶</span><br>
+            <span class="ios-play-icon"></span><br>
         </button>
     </div>
 
