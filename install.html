@@ -219,7 +219,7 @@
 
 
         <!-- Common header (not part of the language pack) -->
-        <h1 class="text-center mt-4">CostGuard v9.7.53</h1>
+        <h1 class="text-center mt-4">CostGuard v9.7.54</h1>
 
         <!-- Translatable content using data-label attributes for all languages -->
 
@@ -789,12 +789,12 @@
         const pwaInstallEl = document.getElementById('pwa-install');
 
         if (pwaInstallEl && typeof pwaInstallEl.showDialog === 'function') {
-            console.log('[Main] Attempting to trigger PWA install dialog.');
+            console.log('[Main] NOT Attempting to trigger PWA install dialog.');
 
-            setTimeout(() => {
+            /*setTimeout(() => {
                 pwaInstallEl.showDialog();
                 console.log('[Main] showDialog() called on pwa-install component.');
-            }, 1000);
+            }, 1000);*/
         } else {
             console.error('[Main] pwa-install element not found or showDialog unavailable.');
         }
