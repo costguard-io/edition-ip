@@ -92,7 +92,7 @@ stateTagApp["commands"] = {
         let body = '<x-project></x-project>';
         this.clear('builder.files');
         console.log(stateTagApp.$read('builder.files'))
-        this.showModal(header, body, {x: false});
+        this.showModal(header, body, {x: true});
     },
 
     editBudget: function () {
