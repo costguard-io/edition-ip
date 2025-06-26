@@ -101,6 +101,7 @@ stateTagApp['state'] = {
         team: '',
         user: '',
         modal: '',
+        camera:'',
     },
     builder: {
         files: [],
