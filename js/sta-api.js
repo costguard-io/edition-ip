@@ -42,6 +42,7 @@ const endPoints = {
         delete: 'api/projects/{project}',
         team: 'api/projects/{project}/team',
         budget: 'api/projects/{project}/budget',
+        exportDestinations: 'api/projects/{project}/destinations'
     },
     files: {
         store: 'api/projects/{project}/files',

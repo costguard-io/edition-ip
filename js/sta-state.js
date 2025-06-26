@@ -43,6 +43,7 @@ stateTagApp['state'] = {
         camera: false,
         microphone: false,
         team: false,
+        export: false,
         passwordReset: false,
         passwordSet: false,
     },
@@ -83,15 +84,16 @@ stateTagApp['state'] = {
         name: '',
         language: 'en',
         currency: '',
+        numberFormat: '#,###.##',
         budget: null, // null implies an ongoing project
         error: '',
     },
+    projects: [],
     receipt: {},
     receipts: [],
-
+    exports: [],
     team: [],
     searches: [],
-    projects: [],
     errors: {
         builder: '',
         projects: '',
